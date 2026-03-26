@@ -93,7 +93,7 @@
   u_a^{n+1/2}=u_a^n+\frac{\Delta t}{2}F_a^n,\quad
   \phi_a^{n+1/2}=\phi_a^n+\frac{\Delta t}{2}I_a^n
   \]
-  校正（用半步力/源项重新计算并更新半步解）：  
+  校正（用半步力/源项改进半步解，作为全步外推基准）：  
   \[
   u_a^{n+1/2}=u_a^n+\frac{\Delta t}{2}F_a^{n+1/2},\;
   X_a^{n+1/2}=X_a^n+\frac{\Delta t}{2}u_a^{n+1/2},\;
