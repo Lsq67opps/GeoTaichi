@@ -94,7 +94,7 @@
   u_a^{n+1/2}=u_a^n+\frac{\Delta t}{2}F_a^n,\quad
   \phi_a^{n+1/2}=\phi_a^n+\frac{\Delta t}{2}I_a^n
   \]
-  校正：  
+  校正（重算半步并覆盖预测值）：  
   \[
   u_a^{n+1/2}=u_a^n+\frac{\Delta t}{2}F_a^{n+1/2},\;
   X_a^{n+1/2}=X_a^n+\frac{\Delta t}{2}u_a^{n+1/2},\;
@@ -123,7 +123,7 @@
 ## 5. 模型参数与子滤波
 - 亚格子应力：SPS Smagorinsky，\(C_s=0.1\)。
 - 施密特数：\(S_c=1.0\) 控制泥沙标量扩散。
-- 状态方程参数：\(\gamma=7\)；声速 \(c_0=10\sqrt{gH}\)（本例 \(H=1\,\mathrm{m}\)，取 \(c_0\approx10\sqrt{g}\)）控制弱可压性。
+- 状态方程参数：\(\gamma=7\)；声速取 \(c_0=10\sqrt{gH}\) 控制弱可压性（本例 \(H=1\,\mathrm{m}\)，故 \(c_0=10\sqrt{g}\)）。
 - 黏性：\(\nu_k=\nu_k^0+\nu_k^{SPS}\)；拖曳系数由 \(\gamma\) 控制，相间扩散 \(\epsilon_s\) 随浓度进入式(4.98)/(4.99)。
 
 ## 6. 求解流程小结
