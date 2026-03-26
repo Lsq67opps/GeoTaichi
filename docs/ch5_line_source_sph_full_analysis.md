@@ -18,8 +18,7 @@
   相间作用 \(\mathbf{F}_{Af}=-\mathbf{F}_{As}=\gamma(\mathbf{u}_s-\mathbf{u}_f)+\) 扩散项；泥沙分压忽略，共享压力场。
 - 状态方程（弱可压 Tait，式(4.105)，\(\gamma=7\)，\(c_0=10\sqrt{gH}\) 以保证密度涨落 \(\lesssim1\%\)）  
   \[
-  (p_f)_a=\frac{\rho_{f0}c_0^{2}}{\gamma}
-  \left[\frac{(\alpha_f\rho_f)_a+(\alpha_s)_a\rho_{f0}}{(\alpha_f\rho_f)_a}\right]^{\gamma}-1
+  (p_f)_a=\frac{\rho_{f0}c_0^{2}}{\gamma}\left(\left[\frac{(\alpha_f\rho_f)_a+(\alpha_s)_a\rho_{f0}}{(\alpha_f\rho_f)_a}\right]^{\gamma}-1\right)
   \]
 
 ## 2. SPH 离散公式（单组粒子）
@@ -94,7 +93,7 @@
   u_a^{n+1/2}=u_a^n+\frac{\Delta t}{2}F_a^n,\quad
   \phi_a^{n+1/2}=\phi_a^n+\frac{\Delta t}{2}I_a^n
   \]
-  校正（用半步力/源项细化半步解并覆盖预测值）：  
+  校正（用半步力/源项重新计算并更新半步解）：  
   \[
   u_a^{n+1/2}=u_a^n+\frac{\Delta t}{2}F_a^{n+1/2},\;
   X_a^{n+1/2}=X_a^n+\frac{\Delta t}{2}u_a^{n+1/2},\;
