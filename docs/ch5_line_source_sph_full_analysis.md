@@ -16,7 +16,7 @@
   =-\alpha_k\nabla p+\nabla\cdot(\alpha_k\boldsymbol{\tau}_k)+\alpha_k\rho_k\mathbf{g}+\mathbf{F}_{Ak}
   \]
   相间作用 \(\mathbf{F}_{Af}=-\mathbf{F}_{As}=\gamma(\mathbf{u}_s-\mathbf{u}_f)+\) 扩散项；泥沙分压忽略，共享压力场。
-- 状态方程（弱可压 Tait，式(4.105)）  
+- 状态方程（弱可压 Tait，式(4.105)，\(\gamma=7\)，\(c_0=10\sqrt{gH}\) 以保证密度涨落 \(\lesssim1\%\)）  
   \[
   (p_f)_a=\frac{\rho_{f0}c_0^{2}}{(\alpha_f\rho_f)_a}
   \left[\frac{(\alpha_f\rho_f)_a+(\alpha_s)_a\rho_{f0}}{(\alpha_f\rho_f)_a}\right]^{\gamma}-1
@@ -123,6 +123,7 @@
 ## 5. 模型参数与子滤波
 - 亚格子应力：SPS Smagorinsky，\(C_s=0.1\)。
 - 施密特数：\(S_c=1.0\) 控制泥沙标量扩散。
+- 状态方程参数：\(\gamma=7\)；声速 \(c_0=10\sqrt{gH}\)（本例 \(H=1\,\mathrm{m}\)，取 \(c_0\approx10\sqrt{g}\)）控制弱可压性。
 - 黏性：\(\nu_k=\nu_k^0+\nu_k^{SPS}\)；拖曳系数由 \(\gamma\) 控制，相间扩散 \(\epsilon_s\) 随浓度进入式(4.98)/(4.99)。
 
 ## 6. 求解流程小结
