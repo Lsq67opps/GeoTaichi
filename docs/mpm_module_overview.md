@@ -36,7 +36,7 @@
 - **接口**：`MPM.add_boundary_condition()` 支持传入字典/列表或文件路径；内部调用 `scene.boundary.iterate_boundary_constraint` 或读取文本（`mainMPM.py` 191-199 行）。
 - **约束类型与存储**：`src/mpm/boundaries/BoundaryConstraint.py` 定义 `BoundaryConstraints`，在 `activate_boundary_constraints()` 中按 `Simulation` 中的最大数量分配 `velocity_boundary`、`traction_boundary`、`friction_boundary`、`reflection_boundary`、`absorbing_boundary` 及粒子荷载 `particle_traction`（53-109 行）。
 - **设置接口**：同文件中提供 `set_velocity_constraints*`、`set_traction_constraints`、`set_particle_traction` 等方法，支持区域/节点选择与自由度控制。
-- **底层 kernel**：`src/mpm/boundaries/BoundaryCore.py` 提供 `kernel_initialize_boundary`、`set_reflection_constraint`、`set_friction_constraint`、`set_contraints`、`set_particle_traction_contraint` 等 Taichi kernel，用于初始化/施加边界条件。
+- **底层 kernel**：`src/mpm/boundaries/BoundaryCore.py` 提供 `kernel_initialize_boundary`、`set_reflection_constraint`、`set_friction_constraint` 以及网格/粒子荷载设置相关的 Taichi kernel（如 `set_*constraint`、`set_particle_traction_*`），用于初始化与施加各类边界或荷载。
 - **示例**：`example/mpm/ElementTest/CompressionMC.py` 72-155 行直接对 `mpm.scene.velocity_boundary[i]`、`traction_boundary[i]` 填写节点号、层级、速度或面力并更新 `velocity_list`/`traction_list`。
 
 ## 5. 时间步长与结果输出
