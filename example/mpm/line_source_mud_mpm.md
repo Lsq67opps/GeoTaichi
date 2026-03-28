@@ -53,27 +53,28 @@ mpm.memory_allocate(memory={
 })
 
 # 4) 材料：区分水体与泥沙团（示例数值可按表 5.1 微调）
-fluid_bulk = (c0 ** 2) * 1000.            # rho_f * c0^2
-background_solid_density = 10.0           # 极小正值，避免完全为零导致质量为零
+rho_f = 1000.                              # 水体密度（kg/m^3）
+fluid_bulk = (c0 ** 2) * rho_f             # rho_f * c0^2
+background_solid_density = 10.0            # 极小正值，避免完全为零导致质量为零（为背景水体提供可计算的 m）
 mpm.add_material(model="LinearElastic", material={  # 背景水体近似无固相（用极软弹性近似流体，详见“可选增强”）
     "MaterialID":       1,
-    "Young":            1e3,        # 极软，避免剪切刚度影响
+    "Young":            1e3,        # 极软（~1 kPa 量级），将剪切刚度降低到对流动几乎无影响
     "Poisson":          0.495,
     "SolidDensity":     background_solid_density,
-    "FluidDensity":     1000.,
+    "FluidDensity":     rho_f,
     "Porosity":         0.999,
     "FluidBulkModulus": fluid_bulk,  # rho_f * c0^2
-    "Permeability":     1e-6
+    "Permeability":     1e-6        # m^2，较大渗透率代表水体自由流动
 })
 mpm.add_material(model="LinearElastic", material={  # 泥沙团，按 αs0=0.606
     "MaterialID":       2,
     "Young":            5e4,       # 可调以控制屈服/扩散
     "Poisson":          0.3,
     "SolidDensity":     2650.,
-    "FluidDensity":     1000.,
+    "FluidDensity":     rho_f,
     "Porosity":         0.394,     # 1 - alpha_s0 (alpha_s0 = 0.606)
     "FluidBulkModulus": fluid_bulk,
-    "Permeability":     1e-7      # 控制拖曳强度
+    "Permeability":     1e-7      # m^2，较小渗透率增强泥沙-水拖曳
 })
 
 # 5) 网格与区域
