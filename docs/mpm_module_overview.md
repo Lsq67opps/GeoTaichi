@@ -4,7 +4,14 @@
 
 ## 1. 入口与整体流程
 
-- **MPM 对象入口**：`src/mpm/mainMPM.py` 中的 `MPM` 类负责全部高层接口：`set_configuration`（39-75 行）、`set_solver`（100-109 行）、`memory_allocate`（111-120 行）、`add_material`（154-156 行）、`add_element`（157-160 行）、`add_region`（161-167 行）、`add_body`（168-170 行）、`add_boundary_condition`（191-199 行）、`select_save_data`（213-217 行）、`run`（300-309 行）等。
+- **MPM 对象入口**：`src/mpm/mainMPM.py` 中的 `MPM` 类负责全部高层接口，其中常用方法位置如下：
+  - `set_configuration`：39-75 行
+  - `set_solver`：100-109 行
+  - `memory_allocate`：111-120 行
+  - `add_material`：154-156 行，`add_element`：157-160 行
+  - `add_region`：161-167 行，`add_body`：168-170 行
+  - `add_boundary_condition`：191-199 行，`select_save_data`：213-217 行
+  - `run`：300-309 行
 - **运行入口**：`MPM.run()` 会调用 `add_essentials()`（创建引擎、记录器、邻域搜索等），随后 `check_critical_timestep()` 校验显式稳定步长，最终调用 `self.solver.Solver(self.scene, self.neighbor)` 或 `Visualize()`（`mainMPM.py` 300-309 行）。
 - **求解循环**：`Solver.Solver()` 在 `src/mpm/MPMBase.py` 52-83 行，先做 `pre_calculation`、首帧保存，再执行主循环：`core()` → `generator.regenerate()` → 按 `save_interval` 调用 `save_file()`，并用 `sims.delta` 累加时间与步数。
 - **核心一次步**：`Solver.core()`（`MPMBase.py` 159-164 行）依次调用 `engine.reset_grid_messages`、`engine.build_neighbor_list`、`engine.compute`，再执行用户注册的 `postprocess` kernel。
@@ -43,7 +50,10 @@
 ## 6. 核心 kernel 的调用链
 
 - **引擎选择**：`MPM.add_engine()` 根据配置选择 `ULExplicitEngine`、`ULImplicitEngine`、`TLExplicitEngine` 等，并由 `Engine.choose_engine()` 将 `compute` 指向具体更新方案（`src/mpm/engines/Engine.py` 42-63 行），例如 USL/USF/MUSL/G2P2G。
-- **显式 UL 引擎示例**：`src/mpm/engines/ULExplicitEngine.py` 中 `musl_updating()`（325-343 行）是常用更新流程，顺序包括 P2G 插值、网格动量/力计算、施加粒子与网格荷载、接触处理、G2P 回写、速度梯度与应力更新、平滑等。`usl_updating()`（292-305 行）、`usf_updating()`（307-323 行）也在同文件内。
+- **显式 UL 引擎示例**（`src/mpm/engines/ULExplicitEngine.py`）：
+  - `usl_updating()`：292-305 行，USL 更新顺序。
+  - `usf_updating()`：307-323 行，USF 更新顺序。
+  - `musl_updating()`：325-343 行，常用 MUSL 更新，依次执行 P2G 插值、网格动量/力计算、施加粒子与网格荷载、接触处理、G2P 回写、速度梯度与应力更新、平滑等。
 - **一次步核心入口**：`Engine.compute` 在上述更新函数里调用 `EngineKernel` 中的 Taichi kernel（P2G/G2P、力与速度更新、应力积分等），典型 kernel 如 `grid_reset`、`calculate_interpolations`、`compute_grid_velocity`、`compute_stress_strain` 位于 `src/mpm/engines/EngineKernel.py`。
 - **调用链串联**：`Solver.core()` → `engine.reset_grid_messages()`（网格清零，`EngineKernel.grid_reset` 等）→ `engine.build_neighbor_list()`（接触/邻居搜索）→ `engine.compute()`（选择的更新函数内部调用 `EngineKernel` 中的 `@ti.kernel` 实现 P2G/G2P、力学计算）→ 可选 `postprocess` 自定义 kernel。
 
