@@ -36,8 +36,8 @@ mpm.set_configuration(domain=[1., 1.],
 
 # 2) 求解器：时间步长取 min(dt_c, dt_F, dt_nu)，下方示例用 SPH 声速 CFL
 h = 0.005
-SOUND_SPEED_MULTIPLIER = 10                # 弱可压 SPH: c0 = 10*sqrt(g*H)，此处 H=1
-c0 = SOUND_SPEED_MULTIPLIER * (9.8 ** 0.5)
+sound_speed_multiplier = 10                # 弱可压 SPH: c0 = 10*sqrt(g*H)，此处 H=1
+c0 = sound_speed_multiplier * (9.8 ** 0.5)
 dt_c = 0.3 * h / c0
 mpm.set_solver({"Timestep":       dt_c,
                 "SimulationTime": 4.0,
@@ -55,10 +55,10 @@ mpm.memory_allocate(memory={
 # 4) 材料：区分水体与泥沙团（示例数值可按表 5.1 微调）
 rho_f = 1000.                              # 水体密度（kg/m^3）
 fluid_bulk = (c0 ** 2) * rho_f             # rho_f * c0^2
-background_solid_density = 1.0             # 远小于典型固体密度(2650 kg/m^3)，为背景水体提供非零固相质量
+background_solid_density = 1.0             # kg/m^3，远小于典型固体密度(2650 kg/m^3)，为背景水体提供非零固相质量
 mpm.add_material(model="LinearElastic", material={  # 背景水体近似无固相（用极软弹性近似流体，详见“可选增强”）
     "MaterialID":       1,
-    "Young":            1e3,        # 1e3 Pa (~1 kPa)，将剪切刚度降低到对流动几乎无影响
+    "Young":            1e3,        # 1e3 Pa (1 kPa)，将剪切刚度降低到对流动几乎无影响
     "Poisson":          0.495,
     "SolidDensity":     background_solid_density,
     "FluidDensity":     rho_f,
