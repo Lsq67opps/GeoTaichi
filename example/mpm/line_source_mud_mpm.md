@@ -55,10 +55,10 @@ mpm.memory_allocate(memory={
 # 4) 材料：区分水体与泥沙团（示例数值可按表 5.1 微调）
 rho_f = 1000.                              # 水体密度（kg/m^3）
 fluid_bulk = (c0 ** 2) * rho_f             # rho_f * c0^2
-background_solid_density = 10.0            # 极小正值，避免完全为零导致质量为零（为背景水体提供可计算的 m）
+background_solid_density = 1.0             # 远小于典型固体密度(2650 kg/m^3)，为背景水体提供非零固相质量
 mpm.add_material(model="LinearElastic", material={  # 背景水体近似无固相（用极软弹性近似流体，详见“可选增强”）
     "MaterialID":       1,
-    "Young":            1e3,        # 极软（~1 kPa 量级），将剪切刚度降低到对流动几乎无影响
+    "Young":            1e3,        # 1e3 Pa (~1 kPa)，将剪切刚度降低到对流动几乎无影响
     "Poisson":          0.495,
     "SolidDensity":     background_solid_density,
     "FluidDensity":     rho_f,
@@ -118,7 +118,7 @@ mpm.postprocessing()
 - 若需更低数值耗散，可把 `mapping="MUSL"`、`velocity_projection="Taylor PIC"`。
 
 ## 4. 时间步长与监控
-- 参考 SPH 约束：`dt_c = 0.3*h/c0`，`dt_F = 0.3*sqrt(h/max|a|)`，`dt_nu = 0.125*h^2/max(nu)`，取三者最小。在 MPM 中可：
+- 参考 SPH 约束：`dt_c = 0.3*h/c0`（声速约束），`dt_F = 0.3*sqrt(h/max|a|)`（max|a| 为最大粒子加速度），`dt_nu = 0.125*h^2/max(nu)`（max(nu) 为最大动力黏度或涡黏度），取三者最小。在 MPM 中可：
   - 直接将 `Timestep` 设为上述最小值；或开启 `AdaptiveTimestep=True`，并在循环外自适应更新 `sims.dt`（需要少量自定义 hook）。
   - `Simulation.check_critical_timestep()` 仅检查 MPM 的 CFL，可在 `mpm.run()` 前手动覆写 `sims.dt[None] = min(...)` 以纳入黏性/加速度约束。
 - 输出粒子文件里已有 `porosity` 与 `solid_mass/fluid_mass`，浓度可后处理为 `alpha_s = 1 - phi`，下沉速度用 `solid_velocity` 或总速 `velocity` 计算。
