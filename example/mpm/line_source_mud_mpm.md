@@ -36,8 +36,8 @@ mpm.set_configuration(domain=[1., 1.],
 
 # 2) 求解器：时间步长取 min(dt_c, dt_F, dt_nu)，下方示例用 SPH 声速 CFL
 h = 0.005
-SOUND_SPEED_COEFFICIENT = 10               # 弱可压 SPH 经验系数 c0 = 10*sqrt(g*H)，此处 H=1
-c0 = SOUND_SPEED_COEFFICIENT * (9.8 ** 0.5)
+SOUND_SPEED_MULTIPLIER = 10                # 弱可压 SPH: c0 = 10*sqrt(g*H)，此处 H=1
+c0 = SOUND_SPEED_MULTIPLIER * (9.8 ** 0.5)
 dt_c = 0.3 * h / c0
 mpm.set_solver({"Timestep":       dt_c,
                 "SimulationTime": 4.0,
@@ -54,12 +54,12 @@ mpm.memory_allocate(memory={
 
 # 4) 材料：区分水体与泥沙团（示例数值可按表 5.1 微调）
 fluid_bulk = (c0 ** 2) * 1000.            # rho_f * c0^2
-min_solid_density = 10.0                  # 避免完全为零导致质量为零
+background_solid_density = 10.0           # 极小正值，避免完全为零导致质量为零
 mpm.add_material(model="LinearElastic", material={  # 背景水体近似无固相（用极软弹性近似流体，详见“可选增强”）
     "MaterialID":       1,
     "Young":            1e3,        # 极软，避免剪切刚度影响
     "Poisson":          0.495,
-    "SolidDensity":     min_solid_density,
+    "SolidDensity":     background_solid_density,
     "FluidDensity":     1000.,
     "Porosity":         0.999,
     "FluidBulkModulus": fluid_bulk,  # rho_f * c0^2
@@ -78,12 +78,14 @@ mpm.add_material(model="LinearElastic", material={  # 泥沙团，按 αs0=0.606
 
 # 5) 网格与区域
 mpm.add_element({"ElementType": "Q4N2D", "ElementSize": [0.005, 0.005]})
+mud_area = 0.05
+mud_side = mud_area ** 0.5
 mpm.add_region([  # 背景水体
     {"Name": "tank", "Type": "Rectangle2D", "BoundingBoxPoint": [0., 0.],
      "BoundingBoxSize": [1., 1.], "ydirection": [0., 1.]},
-    # 泥沙初始团（面积 q0，可切换 0.05/0.10 m^2）
+    # 泥沙初始团（面积 q0，可切换 0.05/0.10 m^2；mud_area 可改成 0.10 后自动更新）
     {"Name": "mud", "Type": "Rectangle2D", "BoundingBoxPoint": [0.45, 0.7],
-     "BoundingBoxSize": [0.2236, 0.2236],  # 边长 sqrt(0.05)≈0.2236 m，对应 0.05 m^2 方形面积
+     "BoundingBoxSize": [mud_side, mud_side],
      "ydirection": [0., 1.]}
 ])
 
