@@ -36,8 +36,8 @@ mpm.set_configuration(domain=[1., 1.],
 
 # 2) 求解器：时间步长取 min(dt_c, dt_F, dt_nu)，下方示例用 SPH 声速 CFL
 h = 0.005
-SOUND_SPEED_COEF = 10                      # 弱可压 SPH 经验系数 c0 = 10*sqrt(g*H)，此处 H=1
-c0 = SOUND_SPEED_COEF * (9.8 ** 0.5)
+SOUND_SPEED_COEFFICIENT = 10               # 弱可压 SPH 经验系数 c0 = 10*sqrt(g*H)，此处 H=1
+c0 = SOUND_SPEED_COEFFICIENT * (9.8 ** 0.5)
 dt_c = 0.3 * h / c0
 mpm.set_solver({"Timestep":       dt_c,
                 "SimulationTime": 4.0,
@@ -47,7 +47,7 @@ mpm.set_solver({"Timestep":       dt_c,
 # 3) 预分配：粒子数覆盖水体 + 泥沙团 + 边界粒子
 mpm.memory_allocate(memory={
     "max_material_number": 2,
-    "max_particle_number": 120000,
+    "max_particle_number": 120000,  # 1 m x 1 m 域，单元 0.005 m，水体+泥团+三层边界粒子留裕度
     "verlet_distance_multiplier": 1.,
     "max_constraint_number": {"max_reflection_constraint": 20000}
 })
@@ -71,7 +71,7 @@ mpm.add_material(model="LinearElastic", material={  # 泥沙团，按 αs0=0.606
     "Poisson":          0.3,
     "SolidDensity":     2650.,
     "FluidDensity":     1000.,
-    "Porosity":         0.394,     # 1 - alpha_s0
+    "Porosity":         0.394,     # 1 - alpha_s0 (alpha_s0 = 0.606)
     "FluidBulkModulus": fluid_bulk,
     "Permeability":     1e-7      # 控制拖曳强度
 })
@@ -83,7 +83,7 @@ mpm.add_region([  # 背景水体
      "BoundingBoxSize": [1., 1.], "ydirection": [0., 1.]},
     # 泥沙初始团（面积 q0，可切换 0.05/0.10 m^2）
     {"Name": "mud", "Type": "Rectangle2D", "BoundingBoxPoint": [0.45, 0.7],
-     "BoundingBoxSize": [0.2236, 0.2236],  # 0.2236 = sqrt(0.05 m^2)
+     "BoundingBoxSize": [0.2236, 0.2236],  # 边长 sqrt(0.05)≈0.2236 m，对应 0.05 m^2 方形面积
      "ydirection": [0., 1.]}
 ])
 
