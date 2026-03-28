@@ -1,6 +1,6 @@
 # GeoTaichi MPM 复现二维线源瞬时抛泥问题改造指南
 
-本说明基于 `example/mpm/ColumnCollapse/NewtonianFluid2D.py`，结合仓库中的 MPM 结构速查文档与 SPH 公式整理（`抛泥问题SPH法解析.md`），梳理如何在 GeoTaichi 的 MPM 框架下复现“二维线源瞬时抛泥”算例。重点给出需要修改或新增的脚本段落、参数设置以及对应代码位置，方便在现有能力范围内快速搭建和后续拓展。本文所有公式均使用纯文本写法（如 `alpha_s = 1 - phi`、`dt_c = 0.3*h/c0`）。
+本说明基于 `example/mpm/ColumnCollapse/NewtonianFluid2D.py`，结合仓库中的 MPM 结构速查文档与 SPH 公式整理（`抛泥问题SPH法解析.md`），梳理如何在 GeoTaichi 的 MPM 框架下复现“二维线源瞬时抛泥”算例。重点给出需要修改或新增的脚本段落、参数设置以及对应代码位置，方便在现有能力范围内快速搭建和后续拓展。本文所有公式均使用纯文本写法（如 `alpha_s = 1 - phi`、`alpha_f = 1 - alpha_s`、`dt_c = 0.3*h/c0`）。
 
 ## 1. 相关模块快速定位
 - 配置与总体流程：`src/mpm/mainMPM.py`（`set_configuration`、`set_solver`、`run`），执行循环在 `src/mpm/MPMBase.py::Solver`。
@@ -11,9 +11,9 @@
 ## 2. 方案概述
 抛泥算例可视为水–泥沙双流体瞬时释放。GeoTaichi 已内置单层两相 MPM 数据结构与显式 UL 引擎，可直接用于“水体+泥沙团”耦合计算。思路：
 - 选用 `material_type="TwoPhaseSingleLayer"` 激活两相引擎与粒子字段。
-- 通过 **两个材料号** 区分背景水体与初始泥沙团，分别设置孔隙度/固相密度/流体体积弹性模量/渗透率，使 `ms/mf` 反映初始体积分数 \(\alpha_s, \alpha_f\)。
+- 通过 **两个材料号** 区分背景水体与初始泥沙团，分别设置孔隙度/固相密度/流体体积弹性模量/渗透率，使 `ms/mf` 反映初始体积分数 alpha_s, alpha_f。
 - 采用 MUSL/USL 显式格式与 Affine/Taylor PIC 投影控制数值耗散，时间步长取 SPH 文档中的 CFL/黏性约束最小值。
-- 边界使用反射约束（线段），域宽高按文献 \(L=H=1\) 设定；输出粒子数据用于后处理泥沙云团宽度/下沉距离。
+- 边界使用反射约束（线段），域宽高按文献 L=H=1 设定；输出粒子数据用于后处理泥沙云团宽度/下沉距离。
 
 ## 3. 基于 `NewtonianFluid2D.py` 的最小改动示例
 以下片段展示核心改动（仅示意关键字段，保持原脚本结构与 API）：
@@ -109,7 +109,7 @@ mpm.postprocessing()
 ```
 
 要点说明：
-- 以 `Porosity` 控制固相体积分数（alpha_s = 1 - phi）；背景水体令 `phi≈1`，泥沙团用 `phi=0.394` 对应 alpha_s0=0.606。
+- 以 `Porosity` 控制固相体积分数（alpha_s = 1 - phi）；背景水体令 phi 约等于 1，泥沙团用 `phi=0.394` 对应 alpha_s0=0.606。
 - `Permeability` 与 `porosity` 共同决定 `ParticleCloudTwoPhase2D._compute_drag_force`，可近似 SPH 里的阻力系数 gamma。减小渗透率或提高固相密度可增强拖曳/沉降。
 - 将 `FluidBulkModulus` 设为 `rho_f * c0^2` 模拟 SPH 的 Tait EOS 弱可压假设；`Young/Poisson` 取软值，使固相应力主要由孔压驱动。
 - 若需更低数值耗散，可把 `mapping="MUSL"`、`velocity_projection="Taylor PIC"`。
