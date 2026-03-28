@@ -19,7 +19,7 @@
 ## 2. 材料配置位置
 
 - **接口**：`MPM.add_material()` 将材料字典传入 `scene.activate_material`（`mainMPM.py` 154-156 行）。
-- **管理类**：`src/mpm/MaterialManager.py` 的 `MaterialHandle.setup()` 读取全部材料参数并实例化相应本构（`material_handle` 方法，覆盖线弹性、Mohr-Coulomb、Drucker-Prager、NeoHookean 等，24-120 行）。
+- **管理类**：`src/mpm/MaterialManager.py` 的 `MaterialHandle.setup()` 读取全部材料参数并实例化相应本构（`material_handle` 方法，覆盖线弹性、MohrCoulomb、Drucker-Prager、NeoHookean 等，24-120 行）。
 - **本构实现**：位于 `src/physics_model/constitutive_model/`（`infinitesimal_strain/`、`finite_strain/`、`strain_rate/`）。
 - **示例**：`example/mpm/ElementTest/CompressionMC.py` 30-40 行展示通过 `mpm.add_material(model="MohrCoulomb", material={...})` 配置材料属性。
 
