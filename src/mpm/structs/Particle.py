@@ -437,7 +437,7 @@ class LargeScaleParticle:
         self.x = vec3f(position)
         self.v = vec3f(velocity)
         self.vol = float(volume)
-        self.stress = float(stress)
+        self.stress = vec6f(stress)
         self.velocity_gradient = mat3x3(velocity_gradient)
         self.fix_v = vec3u8(fix_v)
 
