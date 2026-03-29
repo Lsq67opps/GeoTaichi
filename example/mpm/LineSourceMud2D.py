@@ -80,7 +80,8 @@ def main():
     mpm.add_body({"Template": [
         {"RegionName": "tank", "nParticlesPerCell": 2, "BodyID": 0, "MaterialID": 1,
          "InitialVelocity": [0., 0.], "FixVelocity": ["Free", "Free"]},
-        {"RegionName": "mud", "nParticlesPerCell": 2, "BodyID": 1, "MaterialID": 2,
+        # 仅启用单层网格（未开启接触检测），两个物体共享 BodyID=0
+        {"RegionName": "mud", "nParticlesPerCell": 2, "BodyID": 0, "MaterialID": 2,
          "InitialVelocity": [0., 0.], "FixVelocity": ["Free", "Free"]}
     ]})
 
