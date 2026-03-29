@@ -144,9 +144,11 @@ def init(dim=3, arch="gpu", cpu_max_num_threads=0, offline_cache=True, debug=Fal
                 pynvml.nvmlShutdown()
                 print(f"Using device {gpu_name} (Total: {bytes_to_GB(gpu_memory.total)}GB, Available: {bytes_to_GB(gpu_memory.free)}GB)")
 
-                if not device_memory_GB is None:
+                if (device_memory_GB is not None) and (device_memory_fraction is not None):
+                    print("Warning: both device_memory_GB and device_memory_fraction are set; prefer device_memory_GB.")
+                if device_memory_GB is not None:
                     gpu_kwargs["device_memory_GB"] = min(device_memory_GB, bytes_to_GB(gpu_memory.free))
-                if not device_memory_fraction is None:
+                elif device_memory_fraction is not None:
                     gpu_kwargs["device_memory_fraction"] = min(
                         device_memory_fraction,
                         bytes_to_GB(gpu_memory.free) / bytes_to_GB(gpu_memory.total),
