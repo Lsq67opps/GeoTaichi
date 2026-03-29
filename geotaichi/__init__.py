@@ -125,22 +125,48 @@ def init(dim=3, arch="gpu", cpu_max_num_threads=0, offline_cache=True, debug=Fal
             print("Using GPU on macOS (Metal backend).")
             ti.init(arch=ti.metal, offline_cache=offline_cache, debug=debug, default_fp=default_fp, default_ip=default_ip, kernel_profiler=kernel_profiler, log_level=ti.ERROR)
         else:
-            import pynvml
-            pynvml.nvmlInit()
-            handle = pynvml.nvmlDeviceGetHandleByIndex(0)
-            gpu_name = pynvml.nvmlDeviceGetName(handle=handle)
-            gpu_memory = pynvml.nvmlDeviceGetMemoryInfo(handle=handle)
-            pynvml.nvmlShutdown()
-            print(f"Using device {gpu_name} (Total: {bytes_to_GB(gpu_memory.total)}GB, Available: {bytes_to_GB(gpu_memory.free)}GB)")
+            gpu_kwargs = dict(
+                arch=ti.gpu,
+                offline_cache=offline_cache,
+                debug=debug,
+                default_fp=default_fp,
+                default_ip=default_ip,
+                kernel_profiler=kernel_profiler,
+                log_level=ti.ERROR,
+            )
+            try:
+                import pynvml
 
-            if device_memory_GB is None and device_memory_fraction is None:
-                ti.init(arch=ti.gpu, offline_cache=offline_cache, debug=debug, default_fp=default_fp, default_ip=default_ip, kernel_profiler=kernel_profiler, log_level=ti.ERROR)
-            elif not device_memory_GB is None:
-                device_memory_GB = min(device_memory_GB, bytes_to_GB(gpu_memory.free))
-                ti.init(arch=ti.gpu, offline_cache=offline_cache, device_memory_GB=device_memory_GB, debug=debug, default_fp=default_fp, default_ip=default_ip, kernel_profiler=kernel_profiler, log_level=ti.ERROR)
-            elif not device_memory_fraction is None:
-                device_memory_GB = min(device_memory_fraction, bytes_to_GB(gpu_memory.free) / bytes_to_GB(gpu_memory.total))
-                ti.init(arch=ti.gpu, offline_cache=offline_cache, device_memory_fraction=device_memory_fraction, debug=debug, default_fp=default_fp, default_ip=default_ip, kernel_profiler=kernel_profiler, log_level=ti.ERROR)
+                pynvml.nvmlInit()
+                handle = pynvml.nvmlDeviceGetHandleByIndex(0)
+                gpu_name = pynvml.nvmlDeviceGetName(handle=handle)
+                gpu_memory = pynvml.nvmlDeviceGetMemoryInfo(handle=handle)
+                pynvml.nvmlShutdown()
+                print(f"Using device {gpu_name} (Total: {bytes_to_GB(gpu_memory.total)}GB, Available: {bytes_to_GB(gpu_memory.free)}GB)")
+
+                if not device_memory_GB is None:
+                    gpu_kwargs["device_memory_GB"] = min(device_memory_GB, bytes_to_GB(gpu_memory.free))
+                if not device_memory_fraction is None:
+                    gpu_kwargs["device_memory_fraction"] = min(
+                        device_memory_fraction,
+                        bytes_to_GB(gpu_memory.free) / bytes_to_GB(gpu_memory.total),
+                    )
+            except Exception as e:
+                print(f"Warning: NVML unavailable, continue GPU init without memory introspection ({e}).")
+                if (not device_memory_GB is None) or (not device_memory_fraction is None):
+                    print("Warning: device_memory limits are ignored because NVML is not available.")
+            try:
+                ti.init(**gpu_kwargs)
+            except Exception as e:
+                print(f"Warning: GPU initialization failed, falling back to CPU. ({e})")
+                cpu_name = platform.processor()
+                cpu_core = psutil.cpu_count(False)
+                cpu_logic = psutil.cpu_count(True)
+                print(f"Using device {cpu_name} (Core: {cpu_core}, Logic: {cpu_logic})")
+                if cpu_max_num_threads == 0:
+                    ti.init(arch=ti.cpu, offline_cache=offline_cache, debug=debug, default_fp=default_fp, default_ip=default_ip, kernel_profiler=kernel_profiler, log_level=ti.ERROR)
+                else:
+                    ti.init(arch=ti.cpu, cpu_max_num_threads=cpu_max_num_threads, offline_cache=offline_cache, debug=debug, default_fp=default_fp, default_ip=default_ip, kernel_profiler=kernel_profiler, log_level=ti.ERROR)
     else:
         raise RuntimeError("arch is not recognized, please choose in the following: ['cpu', 'gpu']")
         
@@ -151,4 +177,3 @@ def init(dim=3, arch="gpu", cpu_max_num_threads=0, offline_cache=True, debug=Fal
 def bytes_to_GB(sizes):
     return round(sizes / (1024 ** 3), 2)
   
-
