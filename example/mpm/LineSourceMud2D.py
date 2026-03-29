@@ -38,7 +38,7 @@ def main():
     # 3) 内存分配
     mpm.memory_allocate(memory={
         "max_material_number": 2,
-        "max_particle_number": 120000,  # 1 m × 1 m 区域，0.005 m 单元，水 + 泥 + 边界填充
+        "max_particle_number": 160000,  # 1 m × 1 m 区域，0.005 m 单元，水与泥各 2 粒子/单元（同域叠加）需约 16 万粒子上限
         "verlet_distance_multiplier": 1.,
         "max_constraint_number": {"max_reflection_constraint": 20000}
     })
