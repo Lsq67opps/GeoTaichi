@@ -1,4 +1,7 @@
-# GeoTaichi MPM 复现二维线源瞬时抛泥问题改造指南
+# GeoTaichi MPM guide for 2D line-source mud throw (Chinese)
+
+> Note: This guide remains primarily in Chinese for authorship consistency. Below is an English title and summary for quick orientation; the detailed walkthrough that follows is unchanged.
+> Summary: shows how to reproduce the 2D instantaneous line-source mud-throw case in GeoTaichi MPM, starting from `example/mpm/ColumnCollapse/NewtonianFluid2D.py`, with key script edits, parameters, and mapping to code locations. Equations are given in plain-text (e.g., `alpha_s = 1 - phi`, `dt_c = 0.3*h/c0`).
 
 本说明基于 `example/mpm/ColumnCollapse/NewtonianFluid2D.py`，结合仓库中的 MPM 结构速查文档与 SPH 公式整理（`抛泥问题SPH法解析.md`），梳理如何在 GeoTaichi 的 MPM 框架下复现“二维线源瞬时抛泥”算例。重点给出需要修改或新增的脚本段落、参数设置以及对应代码位置，方便在现有能力范围内快速搭建和后续拓展。本文所有公式均使用纯文本写法（如 `alpha_s = 1 - phi`、`alpha_f = 1 - alpha_s`、`dt_c = 0.3*h/c0`）。
 

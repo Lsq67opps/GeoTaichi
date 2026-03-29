@@ -430,6 +430,9 @@ class LargeScaleParticle:
 
     @ti.func
     def _restart(self, bodyID, materialID, active, mass, position, velocity, volume, stress, velocity_gradient, fix_v):
+        ti.assert(0 <= bodyID < 256, "bodyID must fit into uint8")
+        ti.assert(0 <= materialID < 256, "materialID must fit into uint8")
+        ti.assert(0 <= active < 2, "active flag must be 0 or 1")
         self.bodyID = ti.u8(bodyID)
         self.materialID = ti.u8(materialID)
         self.active = ti.u8(active)
@@ -507,16 +510,19 @@ class ParticleCloud:
 
     @ti.func
     def _restart(self, bodyID, materialID, active, mass, position, velocity, volume, stress, velocity_gradient, fix_v):
+        ti.assert(0 <= bodyID < 256, "bodyID must fit into uint8")
+        ti.assert(0 <= materialID < 256, "materialID must fit into uint8")
+        ti.assert(0 <= active < 2, "active flag must be 0 or 1")
         self.bodyID = ti.u8(bodyID)
         self.materialID = ti.u8(materialID)
         self.active = ti.u8(active)
         self.m = float(mass)
-        self.x = float(position)
-        self.v = float(velocity)
+        self.x = vec3f(position)
+        self.v = vec3f(velocity)
         self.vol = float(volume)
-        self.stress = float(stress)
-        self.velocity_gradient = float(velocity_gradient)
-        self.fix_v = ti.cast(fix_v, ti.u8)
+        self.stress = vec6f(stress)
+        self.velocity_gradient = mat3x3(velocity_gradient)
+        self.fix_v = vec3u8(fix_v)
 
     @ti.func
     def _set_essential(self, particleID, bodyID, materialID, density, particle_volume, position, init_v, fix_v):
