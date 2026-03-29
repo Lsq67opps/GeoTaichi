@@ -21,7 +21,7 @@ import trimesh as tm
 # gmsh bindings are optional in newer trimesh versions; only require them when needed.
 try:
     from trimesh.interfaces import gmsh
-except Exception:
+except ImportError:
     gmsh = None
 from third_party.pyevtk.hl import unstructuredGridToVTK, gridToVTK
 from third_party.pyevtk.vtk import VtkTriangle, VtkQuad
