@@ -152,8 +152,6 @@ class Engine(object):
             if sims.pressure_smoothing:
                 self.pressure_smoothing_ = self.pressure_smoothing
 
-            if sims.velocity_projection_scheme == "Affine" or sims.velocity_projection_scheme == "Taylor":
-                self.compute_nodal_kinematic = self.compute_nodal_kinematics_taylor
         elif sims.dimension == 2:
             self.compute_particle_kinematic = self.compute_particle_kinematics
             if not sims.is_2DAxisy:
@@ -238,12 +236,6 @@ class Engine(object):
 
             if sims.pressure_smoothing:
                 self.pressure_smoothing_ = self.pressure_smoothing
-
-            if sims.velocity_projection_scheme == "Affine" or sims.velocity_projection_scheme == "Taylor":
-                if sims.is_2DAxisy:
-                    self.compute_nodal_kinematic = self.compute_nodal_kinematics_taylor_2DAxisy
-                else:
-                    self.compute_nodal_kinematic = self.compute_nodal_kinematics_taylor
         
         self.is_verlet_update = self.is_need_update_verlet_table
         if sims.neighbor_detection:
@@ -256,10 +248,21 @@ class Engine(object):
             if sims.free_surface_detection:
                 self.free_surface_by_geometry = self.detection_free_surface
 
-            self.compute_boundary_direction = no_operation
-            if sims.boundary_direction_detection:
-                self.compute_boundary_direction = self.detection_boundary_direction
-            self.compute_nodal_kinematic = no_operation
+        self.compute_boundary_direction = no_operation
+        if sims.boundary_direction_detection:
+            self.compute_boundary_direction = self.detection_boundary_direction
+        self._configure_nodal_kinematic_projection(sims)
+
+    def _configure_nodal_kinematic_projection(self, sims: Simulation):
+        # Enable Taylor/APIC nodal projection when requested, except for two-phase
+        # particles which lack a single velocity_gradient field.
+        if sims.material_type == "TwoPhaseSingleLayer":
+            return
+        if sims.velocity_projection_scheme == "Affine" or sims.velocity_projection_scheme == "Taylor":
+            if sims.dimension == 2 and sims.is_2DAxisy:
+                self.compute_nodal_kinematic = self.compute_nodal_kinematics_taylor_2DAxisy
+            else:
+                self.compute_nodal_kinematic = self.compute_nodal_kinematics_taylor
 
     def reset_particle_message(self, scene: myScene):
         contact_force_reset(int(scene.particleNum[0]), scene.particle)
@@ -288,6 +291,11 @@ class Engine(object):
         kernel_mass_momentum_p2g(scene.element.grid_nodes, int(scene.particleNum[0]), scene.node, scene.particle, scene.element.LnID, scene.element.shape_fn, scene.element.node_size)
 
     def compute_nodal_kinematics_taylor(self, sims: Simulation, scene: myScene):
+        # Two-phase particles do not store a single velocity_gradient field, so the Taylor/APIC
+        # projection is not applicable. Keep a defensive fallback here in case callers bypass
+        # the centralized configuration that already skips Taylor/APIC for two-phase runs.
+        if sims.material_type == "TwoPhaseSingleLayer":
+            return self.compute_nodal_kinematics(sims, scene)
         kernel_mass_momentum_taylor_p2g(scene.element.grid_nodes, int(scene.particleNum[0]), scene.element.gnum, scene.element.grid_size, scene.node, scene.particle, scene.element.LnID, scene.element.shape_fn, scene.element.node_size)
 
     def compute_nodal_kinematics_taylor_2DAxisy(self, sims: Simulation, scene: myScene):
