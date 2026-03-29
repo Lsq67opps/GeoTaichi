@@ -288,6 +288,10 @@ class Engine(object):
         kernel_mass_momentum_p2g(scene.element.grid_nodes, int(scene.particleNum[0]), scene.node, scene.particle, scene.element.LnID, scene.element.shape_fn, scene.element.node_size)
 
     def compute_nodal_kinematics_taylor(self, sims: Simulation, scene: myScene):
+        # Two-phase particles do not store a single velocity_gradient field, so the Taylor/APIC
+        # projection is not applicable. Fallback to the regular mapping in that case.
+        if sims.material_type == "TwoPhaseSingleLayer" or not hasattr(scene.particle, "velocity_gradient"):
+            return self.compute_nodal_kinematics(sims, scene)
         kernel_mass_momentum_taylor_p2g(scene.element.grid_nodes, int(scene.particleNum[0]), scene.element.gnum, scene.element.grid_size, scene.node, scene.particle, scene.element.LnID, scene.element.shape_fn, scene.element.node_size)
 
     def compute_nodal_kinematics_taylor_2DAxisy(self, sims: Simulation, scene: myScene):
