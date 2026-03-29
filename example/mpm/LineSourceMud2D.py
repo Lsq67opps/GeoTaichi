@@ -15,8 +15,8 @@ def main():
 
     rho_f = 1000.  # fluid density (kg/m^3)
     fluid_bulk = (c0 ** 2) * rho_f  # rho_f * c0^2
-    background_water_solid_density = 1.0  # kg/m^3, small solid density so two-phase mass terms stay non-zero and stable
-    mud_area = 0.05  # m^2, set to 0.10 to match the larger initial patch
+    background_water_solid_density = 1.0  # kg/m^3, intentionally << 2650 to mimic water; keeps two-phase mass terms non-zero/stable
+    mud_area = 0.05  # m^2; change to 0.10 if using the larger initial mud patch described in the reference
     mud_region_side_length = mud_area ** 0.5
 
     # 1) configuration
