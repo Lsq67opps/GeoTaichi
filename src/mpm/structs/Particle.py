@@ -430,8 +430,8 @@ class LargeScaleParticle:
 
     @ti.func
     def _restart(self, bodyID, materialID, active, mass, position, velocity, volume, stress, velocity_gradient, fix_v):
-        ti.assert(0 <= bodyID < 256, "bodyID must fit into uint8")
-        ti.assert(0 <= materialID < 256, "materialID must fit into uint8")
+        ti.assert(0 <= bodyID < 256, "bodyID must fit into ti.u8")
+        ti.assert(0 <= materialID < 256, "materialID must fit into ti.u8")
         ti.assert(0 <= active < 2, "active flag must be 0 or 1")
         self.bodyID = ti.u8(bodyID)
         self.materialID = ti.u8(materialID)
@@ -510,8 +510,8 @@ class ParticleCloud:
 
     @ti.func
     def _restart(self, bodyID, materialID, active, mass, position, velocity, volume, stress, velocity_gradient, fix_v):
-        ti.assert(0 <= bodyID < 256, "bodyID must fit into uint8")
-        ti.assert(0 <= materialID < 256, "materialID must fit into uint8")
+        ti.assert(0 <= bodyID < 256, "bodyID must fit into ti.u8")
+        ti.assert(0 <= materialID < 256, "materialID must fit into ti.u8")
         ti.assert(0 <= active < 2, "active flag must be 0 or 1")
         self.bodyID = ti.u8(bodyID)
         self.materialID = ti.u8(materialID)
