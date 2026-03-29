@@ -251,7 +251,6 @@ class Engine(object):
         self.compute_boundary_direction = no_operation
         if sims.boundary_direction_detection:
             self.compute_boundary_direction = self.detection_boundary_direction
-        self.compute_nodal_kinematic = no_operation
         self._configure_nodal_kinematic_projection(sims)
 
     def _configure_nodal_kinematic_projection(self, sims: Simulation):
