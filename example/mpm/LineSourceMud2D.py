@@ -46,8 +46,8 @@ def main():
     # 4) materials
     mpm.add_material(model="LinearElastic", material={  # background water surrogate
         "MaterialID": 1,
-        "Young": 1e3,                 # 1e3 Pa (1 kPa); use 1e2~1e4 Pa to keep flow-like behaviour
-        "Poisson": 0.495,
+        "YoungModulus": 1e3,          # 1e3 Pa (1 kPa); use 1e2~1e4 Pa to keep flow-like behaviour
+        "PoissonRatio": 0.495,
         "SolidDensity": background_water_solid_density,
         "FluidDensity": rho_f,
         "Porosity": 0.999,
@@ -57,8 +57,8 @@ def main():
 
     mpm.add_material(model="LinearElastic", material={  # mud cloud, alpha_s0 = 0.606 => porosity 0.394
         "MaterialID": 2,
-        "Young": 5e4,                 # increasing stiffens skeleton, reducing cloud spread; lowering increases spread
-        "Poisson": 0.3,
+        "YoungModulus": 5e4,          # increasing stiffens skeleton, reducing cloud spread; lowering increases spread
+        "PoissonRatio": 0.3,
         "SolidDensity": 2650.,
         "FluidDensity": rho_f,
         "Porosity": 0.394,
