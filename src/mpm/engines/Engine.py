@@ -152,7 +152,7 @@ class Engine(object):
             if sims.pressure_smoothing:
                 self.pressure_smoothing_ = self.pressure_smoothing
 
-            if sims.velocity_projection_scheme == "Affine" or sims.velocity_projection_scheme == "Taylor":
+            if (sims.velocity_projection_scheme == "Affine" or sims.velocity_projection_scheme == "Taylor") and sims.material_type != "TwoPhaseSingleLayer":
                 self.compute_nodal_kinematic = self.compute_nodal_kinematics_taylor
         elif sims.dimension == 2:
             self.compute_particle_kinematic = self.compute_particle_kinematics
@@ -239,7 +239,7 @@ class Engine(object):
             if sims.pressure_smoothing:
                 self.pressure_smoothing_ = self.pressure_smoothing
 
-            if sims.velocity_projection_scheme == "Affine" or sims.velocity_projection_scheme == "Taylor":
+            if (sims.velocity_projection_scheme == "Affine" or sims.velocity_projection_scheme == "Taylor") and sims.material_type != "TwoPhaseSingleLayer":
                 if sims.is_2DAxisy:
                     self.compute_nodal_kinematic = self.compute_nodal_kinematics_taylor_2DAxisy
                 else:
