@@ -37,8 +37,9 @@ mpm.set_configuration(domain=[1., 1.],
 
 # 2) 求解器：时间步长取 min(dt_c, dt_F, dt_nu)，下方示例用 SPH 声速 CFL
 h = 0.005
+water_depth = 1.0
 sound_speed_multiplier = 10                # 弱可压 SPH: c0 = 10*sqrt(g*H)，此处 H=1
-c0 = sound_speed_multiplier * (GRAVITY_ACCELERATION ** 0.5)
+c0 = sound_speed_multiplier * (GRAVITY_ACCELERATION * water_depth) ** 0.5
 dt_c = 0.3 * h / c0
 mpm.set_solver({"Timestep":       dt_c,
                 "SimulationTime": 4.0,

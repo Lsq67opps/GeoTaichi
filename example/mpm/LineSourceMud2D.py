@@ -8,8 +8,9 @@ def main():
     # constants
     GRAVITY_ACCELERATION = 9.8
     h = 0.005
-    sound_speed_multiplier = 10  # weakly-compressible SPH guideline: c0 = 10*sqrt(g*H); here we use H=1 m (tank depth)
-    c0 = sound_speed_multiplier * (GRAVITY_ACCELERATION ** 0.5)
+    water_depth = 1.0
+    sound_speed_multiplier = 10  # weakly-compressible SPH guideline: c0 = 10*sqrt(g*H); here H=1 m (tank depth)
+    c0 = sound_speed_multiplier * (GRAVITY_ACCELERATION * water_depth) ** 0.5
     dt_c = 0.3 * h / c0
 
     rho_f = 1000.  # fluid density (kg/m^3)
