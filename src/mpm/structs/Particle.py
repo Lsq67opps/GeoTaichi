@@ -414,26 +414,44 @@ class ParticleCloud2DAxisy:  # memory usage: 108B
 
 @ti.dataclass
 class LargeScaleParticle:
+    # Reduced-memory particle used for G2P2G mode; still needs velocity gradient
+    # support when Taylor/APIC projection is enabled.
     particleID: int
+    bodyID: ti.u8
+    materialID: ti.u8
+    active: ti.u8
+    m: float
     vol: float
     x: vec3f
     v: vec3f
     stress: vec6f
+    velocity_gradient: mat3x3
+    fix_v: vec3u8
 
     @ti.func
     def _restart(self, bodyID, materialID, active, mass, position, velocity, volume, stress, velocity_gradient, fix_v):
+        self.bodyID = ti.u8(bodyID)
+        self.materialID = ti.u8(materialID)
+        self.active = ti.u8(active)
+        self.m = float(mass)
         self.x = float(position)
         self.v = float(velocity)
         self.vol = float(volume)
         self.stress = float(stress)
+        self.velocity_gradient = float(velocity_gradient)
+        self.fix_v = ti.cast(fix_v, ti.u8)
 
     @ti.func
     def _set_essential(self, particleID, bodyID, materialID, density, particle_volume, position, init_v, fix_v):
         self.particleID = particleID
+        self.active = ti.u8(1)
+        self.bodyID = ti.u8(bodyID)
+        self.materialID = ti.u8(materialID)
         self.m = float(particle_volume * density)
         self.x = float(position)
         self.v = float(init_v)
         self.vol = float(particle_volume)
+        self.fix_v = fix_v
 
     @ti.func
     def _add_gravity_field(self, gamma):
@@ -464,6 +482,14 @@ class LargeScaleParticle:
         elif ti.static(self.stress.n == 3):
             pressure = 1./3. * (self.stress[0, 0] + self.stress[1, 1] + self.stress[2, 2])
         return pressure
+
+    @ti.func
+    def _update_rigid_body(self, dt):
+        self.x += self.v * dt[None]
+
+    @ti.func
+    def _compute_particle_velocity(self, xg):
+        return self.v - self.velocity_gradient @ (self.x - xg)
 
 @ti.dataclass
 class ParticleCloud:      
