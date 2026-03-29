@@ -49,7 +49,8 @@ mpm.set_solver({"Timestep":       dt_c,
 # 3) 预分配：粒子数覆盖水体 + 泥沙团 + 边界粒子
 mpm.memory_allocate(memory={
     "max_material_number": 2,
-    "max_particle_number": 120000,  # 1 m x 1 m 域，单元 0.005 m，水体+泥团+三层边界粒子留裕度
+    # 1 m x 1 m 域，单元 0.005 m，水体+泥团各 2 粒子/单元（同域叠加、双相）实际约 16.8 万粒子
+    "max_particle_number": 180000,
     "verlet_distance_multiplier": 1.,
     "max_constraint_number": {"max_reflection_constraint": 20000}
 })
