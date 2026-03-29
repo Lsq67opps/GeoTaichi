@@ -39,7 +39,7 @@ mpm.set_configuration(domain=[1., 1.],
 h = 0.005
 water_depth = 1.0
 sound_speed_multiplier = 10                # 弱可压 SPH: c0 = 10*sqrt(g*H)，此处 H=1
-c0 = sound_speed_multiplier * (GRAVITY_ACCELERATION * water_depth) ** 0.5
+c0 = sound_speed_multiplier * (GRAVITY_ACCELERATION * water_depth) ** 0.5  # water_depth 默认为 1 m，可调整
 dt_c = 0.3 * h / c0
 mpm.set_solver({"Timestep":       dt_c,
                 "SimulationTime": 4.0,
