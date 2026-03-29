@@ -9,7 +9,7 @@
 - 输出：`src/mpm/Recorder.py::MonitorParticleTwoPhase` 会存储总/固/液速度、质量、孔隙度、压力等，便于后处理云团浓度和下沉速度。
 
 ## 2. 方案概述
-抛泥算例可视为水–泥沙双流体瞬时释放。GeoTaichi 已内置单层两相 MPM 数据结构与显式 UL 引擎，可直接用于“水体+泥沙团”耦合计算。思路：
+抛泥算例可视为水-泥沙双流体瞬时释放。GeoTaichi 已内置单层两相 MPM 数据结构与显式 UL 引擎，可直接用于“水体+泥沙团”耦合计算。思路：
 - 选用 `material_type="TwoPhaseSingleLayer"` 激活两相引擎与粒子字段。
 - 通过 **两个材料号** 区分背景水体与初始泥沙团，分别设置孔隙度/固相密度/流体体积弹性模量/渗透率，使 `ms/mf` 反映初始体积分数 alpha_s, alpha_f。
 - 采用 MUSL/USL 显式格式与 Affine/Taylor PIC 投影控制数值耗散，时间步长取 SPH 文档中的 CFL/黏性约束最小值。
@@ -96,8 +96,8 @@ mpm.add_region([  # 背景水体
 mpm.add_body({"Template": [
     {"RegionName": "tank", "nParticlesPerCell": 2, "BodyID": 0, "MaterialID": 1,
      "InitialVelocity": [0., 0.], "FixVelocity": ["Free", "Free"]},
-    {"RegionName": "mud", "nParticlesPerCell": 2, "BodyID": 1, "MaterialID": 2,
-     "InitialVelocity": [0., 0.], "FixVelocity": ["Free", "Free"]}
+    {"RegionName": "mud", "nParticlesPerCell": 2, "BodyID": 0, "MaterialID": 2,
+     "InitialVelocity": [0., 0.], "FixVelocity": ["Free", "Free"]}  # 默认单层网格未启用接触检测，共用 BodyID=0
 ]})
 
 # 7) 边界：四周反射（与原算例一致）
