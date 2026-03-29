@@ -8,13 +8,13 @@ def main():
     # constants
     GRAVITY_ACCELERATION = 9.8
     h = 0.005
-    sound_speed_multiplier = 10  # weakly-compressible SPH guideline: c0 = 10*sqrt(g*H), here H=1
+    sound_speed_multiplier = 10  # weakly-compressible SPH guideline: c0 = 10*sqrt(g*H); here we use H=1 m (tank depth)
     c0 = sound_speed_multiplier * (GRAVITY_ACCELERATION ** 0.5)
     dt_c = 0.3 * h / c0
 
     rho_f = 1000.  # fluid density (kg/m^3)
     fluid_bulk = (c0 ** 2) * rho_f  # rho_f * c0^2
-    background_water_solid_density = 1.0  # kg/m^3, tiny solid density to keep mass non-zero
+    background_water_solid_density = 1.0  # kg/m^3, small solid density so two-phase mass terms stay non-zero and stable
     mud_area = 0.05  # m^2, set to 0.10 to match the larger initial patch
     mud_region_side_length = mud_area ** 0.5
 
