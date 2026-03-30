@@ -9,7 +9,7 @@ def main():
     GRAVITY_ACCELERATION = 9.8
     h = 0.005
     water_depth = 1.0  # 1 m 水深，与文献保持一致
-    sound_speed_multiplier = 6   # 降低体积模量以减小初始水-泥压力跳变
+    sound_speed_multiplier = 4   # 进一步降低体积模量以减小初始水-泥压力跳变
     c0 = sound_speed_multiplier * (GRAVITY_ACCELERATION * water_depth) ** 0.5
     dt_c = 0.3 * h / c0
 
@@ -21,7 +21,7 @@ def main():
 
     # 1) 配置
     mpm.set_configuration(domain=[1., 1.],
-                          background_damping=0.02,
+                          background_damping=0.2,     # 增大阻尼帮助静水压力先稳定
                           alphaPIC=0.2,
                           mapping="USL",               # 也支持 MUSL
                           shape_function="QuadBSpline",
