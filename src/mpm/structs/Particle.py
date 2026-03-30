@@ -301,6 +301,29 @@ class ParticleCloudTwoPhase2D:      # memory usage: 108B
         self.vs = (alpha * vPICs + (1 - alpha) * (vFLIPs + v0s)) * flag2 + v0s * flag1
         self.vf = (alpha * vPICf + (1 - alpha) * (vFLIPf + v0f)) * flag2 + v0f * flag1
         self.x += vPIC * dt[None] * flag2 + v0 * dt[None] * flag1
+        # 若粒子在单步内穿越背景网格范围，立即截断位置并反射速度，避免约束失效
+        if GlobalVariable.MPMXSIZE > 0.:
+            if self.x[0] < 0.:
+                self.x[0] = 0.
+                self.v[0] = abs(self.v[0])
+                self.vs[0] = abs(self.vs[0])
+                self.vf[0] = abs(self.vf[0])
+            elif self.x[0] > GlobalVariable.MPMXSIZE:
+                self.x[0] = GlobalVariable.MPMXSIZE
+                self.v[0] = -abs(self.v[0])
+                self.vs[0] = -abs(self.vs[0])
+                self.vf[0] = -abs(self.vf[0])
+        if GlobalVariable.MPMYSIZE > 0.:
+            if self.x[1] < 0.:
+                self.x[1] = 0.
+                self.v[1] = abs(self.v[1])
+                self.vs[1] = abs(self.vs[1])
+                self.vf[1] = abs(self.vf[1])
+            elif self.x[1] > GlobalVariable.MPMYSIZE:
+                self.x[1] = GlobalVariable.MPMYSIZE
+                self.v[1] = -abs(self.v[1])
+                self.vs[1] = -abs(self.vs[1])
+                self.vf[1] = -abs(self.vf[1])
         if ti.static(GlobalVariable.MPMXPBC):
             self.x[0] -= ti.floor(self.x[0] / GlobalVariable.MPMXSIZE) * GlobalVariable.MPMXSIZE
         if ti.static(GlobalVariable.MPMYPBC):
