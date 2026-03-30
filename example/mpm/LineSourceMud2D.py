@@ -49,8 +49,8 @@ def main():
     # 若 TwoPhaseSingleLayer 需要骨架参数，采用极低强度的 Mohr-Coulomb 近似流体
     mpm.add_material(model="MohrCoulomb", material={  # 背景“水”
         "MaterialID": 1,
-        "YoungModulus": 1e3,          # 极小模量
-        "PoissonRatio": 0.3,          # 放宽泊松比，水的不可压缩性由 FluidBulkModulus 控制
+        "YoungModulus": 1e2,          # 更软的骨架，避免虚假体积模量
+        "PoissonRatio": 0.0,          # 不依赖固相不可压缩性；由 FluidBulkModulus 提供体积模量
         "Cohesion": 0.0,              # 无黏聚力，模拟无抗拉流体
         "Friction": 0.0,
         "Dilation": 0.0,

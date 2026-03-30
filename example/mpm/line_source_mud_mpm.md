@@ -64,8 +64,8 @@ fluid_bulk = (c0 ** 2) * rho_f             # rho_f * c0^2
 background_water_solid_density = 1.0       # kg/m^3，远小于典型固体密度(2650 kg/m^3)，为背景水体提供非零固相质量
 mpm.add_material(model="LinearElastic", material={  # 背景水体近似无固相（用极软弹性近似流体，详见“可选增强”）
     "MaterialID":       1,
-    "YoungModulus":     1e3,        # 1e3 Pa (1 kPa)，推荐 1e2~1e4 Pa 控制数值耗散但不阻碍流动
-    "PoissonRatio":     0.495,
+    "YoungModulus":     1e2,        # 1e2 Pa，极软骨架，避免对体积模量的贡献
+    "PoissonRatio":     0.0,        # 由 FluidBulkModulus 控制不可压缩性，泊松比取 0 以避免锁死
     "SolidDensity":     background_water_solid_density,
     "FluidDensity":     rho_f,
     "Porosity":         0.999,
@@ -85,12 +85,12 @@ mpm.add_material(model="LinearElastic", material={  # 泥沙团，按 αs0=0.606
 
 # 5) 网格与区域
 mpm.add_element({"ElementType": "Q4N2D", "ElementSize": [0.005, 0.005]})
-mud_area = 0.05
+mud_area = 5e-4                     # 5 cm^2，保持与文献一致
 mud_region_side_length = mud_area ** 0.5
 mpm.add_region([  # 背景水体
     {"Name": "tank", "Type": "Rectangle2D", "BoundingBoxPoint": [0., 0.],
      "BoundingBoxSize": [1., 1.], "ydirection": [0., 1.]},
-    # 泥沙初始团（面积 q0，可切换 0.05/0.10 m^2；mud_area 可改成 0.10 后自动更新）
+    # 泥沙初始团（面积 q0 = 5e-4 m^2，可按需修改 mud_area 自动更新）
     {"Name": "mud", "Type": "Rectangle2D", "BoundingBoxPoint": [0.45, 0.7],
      "BoundingBoxSize": [mud_region_side_length, mud_region_side_length],
      "ydirection": [0., 1.]}
