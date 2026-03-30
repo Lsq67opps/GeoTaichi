@@ -69,27 +69,40 @@ def main():
 
     # 5) 单元与区域
     mpm.add_element({"ElementType": "Q4N2D", "ElementSize": [h, h]})
-    mud_top = 0.7 + mud_region_side_length
+    
+    mud_x_start = 0.45
+    mud_width = mud_region_side_length
+    mud_x_end = mud_x_start + mud_width
+    mud_y_start = 0.7
+    mud_y_end = mud_y_start + mud_width
+
     mpm.add_region([
-        # 水体区域：拆分成上下两块，避免与泥块占据同一初始单元
+        # 底部水体
         {"Name": "tank_bottom", "Type": "Rectangle2D", "BoundingBoxPoint": [0., 0.],
-         "BoundingBoxSize": [1., 0.7], "ydirection": [0., 1.]},
-        {"Name": "tank_top", "Type": "Rectangle2D", "BoundingBoxPoint": [0., mud_top],
-         "BoundingBoxSize": [1., water_depth - mud_top], "ydirection": [0., 1.]},
-        {"Name": "mud", "Type": "Rectangle2D", "BoundingBoxPoint": [0.45, 0.7],
-         "BoundingBoxSize": [mud_region_side_length, mud_region_side_length],
-         "ydirection": [0., 1.]}
+         "BoundingBoxSize": [1., mud_y_start], "ydirection": [0., 1.]},
+        # 顶部水体
+        {"Name": "tank_top", "Type": "Rectangle2D", "BoundingBoxPoint": [0., mud_y_end],
+         "BoundingBoxSize": [1., water_depth - mud_y_end], "ydirection": [0., 1.]},
+        # 左侧水体
+        {"Name": "tank_left", "Type": "Rectangle2D", "BoundingBoxPoint": [0., mud_y_start],
+         "BoundingBoxSize": [mud_x_start, mud_width], "ydirection": [0., 1.]},
+        # 右侧水体
+        {"Name": "tank_right", "Type": "Rectangle2D", "BoundingBoxPoint": [mud_x_end, mud_y_start],
+         "BoundingBoxSize": [1.0 - mud_x_end, mud_width], "ydirection": [0., 1.]},
+        # 泥块
+        {"Name": "mud", "Type": "Rectangle2D", "BoundingBoxPoint": [mud_x_start, mud_y_start],
+         "BoundingBoxSize": [mud_width, mud_width], "ydirection": [0., 1.]}
     ])
 
     # 6) 物体
+    # 将四个水体区域合并为背景水，全部赋给 MaterialID=1
     mpm.add_body({"Template": [
-         {"RegionName": "tank_bottom", "nParticlesPerCell": 1, "BodyID": 0, "MaterialID": 1,
-          "InitialVelocity": [0., 0.], "FixVelocity": ["Free", "Free"]},
-         {"RegionName": "tank_top", "nParticlesPerCell": 1, "BodyID": 0, "MaterialID": 1,
-          "InitialVelocity": [0., 0.], "FixVelocity": ["Free", "Free"]},
-         # Single-layer grid only (contact detection disabled); both bodies share BodyID=0
-         {"RegionName": "mud", "nParticlesPerCell": 2, "BodyID": 0, "MaterialID": 2,
-          "InitialVelocity": [0., 0.], "FixVelocity": ["Free", "Free"]}
+         {"RegionName": "tank_bottom", "nParticlesPerCell": 2, "BodyID": 0, "MaterialID": 1, "InitialVelocity": [0., 0.], "FixVelocity": ["Free", "Free"]},
+         {"RegionName": "tank_top",    "nParticlesPerCell": 2, "BodyID": 1, "MaterialID": 1, "InitialVelocity": [0., 0.], "FixVelocity": ["Free", "Free"]},
+         {"RegionName": "tank_left",   "nParticlesPerCell": 2, "BodyID": 2, "MaterialID": 1, "InitialVelocity": [0., 0.], "FixVelocity": ["Free", "Free"]},
+         {"RegionName": "tank_right",  "nParticlesPerCell": 2, "BodyID": 3, "MaterialID": 1, "InitialVelocity": [0., 0.], "FixVelocity": ["Free", "Free"]},
+         # 泥块，MaterialID=2
+         {"RegionName": "mud",         "nParticlesPerCell": 2, "BodyID": 4, "MaterialID": 2, "InitialVelocity": [0., 0.], "FixVelocity": ["Free", "Free"]}
     ]})
 
     # 7) 边界：四面反射壁
