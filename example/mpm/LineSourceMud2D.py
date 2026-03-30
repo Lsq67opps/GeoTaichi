@@ -45,26 +45,33 @@ def main():
     })
 
     # 4) 材料
-    mpm.add_material(model="LinearElastic", material={  # 背景“水”替代
+    # 若 TwoPhaseSingleLayer 需要骨架参数，采用极低强度的 Mohr-Coulomb 近似流体
+    mpm.add_material(model="MohrCoulomb", material={  # 背景“水”
         "MaterialID": 1,
-        "YoungModulus": 5e2,          # 更软的背景水体以减小体积应力
+        "YoungModulus": 1e3,          # 极小模量
         "PoissonRatio": 0.495,
+        "Cohesion": 0.0,              # 无黏聚力，模拟无抗拉流体
+        "Friction": 0.0,
+        "Dilation": 0.0,
         "SolidDensity": background_water_solid_density,
         "FluidDensity": rho_f,
         "Porosity": 0.999,
         "FluidBulkModulus": fluid_bulk,
-        "Permeability": 1e-6          # m^2；较大渗透率以模拟自由水流
+        "Permeability": 1e-2          # 极大渗透率，水相自由流动
     })
 
-    mpm.add_material(model="LinearElastic", material={  # 泥云，alpha_s0 = 0.606 => 孔隙率 0.394
+    mpm.add_material(model="MohrCoulomb", material={  # 泥云，alpha_s0 = 0.606 => 孔隙率 0.394
         "MaterialID": 2,
-        "YoungModulus": 2e4,          # 稍软化骨架以降低瞬时应力峰值
-        "PoissonRatio": 0.25,
+        "YoungModulus": 1e6,
+        "PoissonRatio": 0.3,
+        "Cohesion": 5.0,              # 泥的黏聚力，值越小越易散开
+        "Friction": 15.0,
+        "Dilation": 0.0,
         "SolidDensity": 2650.,
         "FluidDensity": rho_f,
         "Porosity": 0.394,
         "FluidBulkModulus": fluid_bulk,
-        "Permeability": 1e-7          # m^2；更小渗透率增强泥-水阻力
+        "Permeability": 1e-7
     })
 
     # 5) 单元与区域
