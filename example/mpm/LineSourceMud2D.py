@@ -16,7 +16,8 @@ def main():
     rho_f = 1000.  # 流体密度 (kg/m^3)
     fluid_bulk = (c0 ** 2) * rho_f  # rho_f * c0^2
     background_water_solid_density = 1.0  # kg/m^3，刻意远小于 2650 以模拟水；保证两相质量项非零且稳定
-    mud_area = 0.05  # m^2；若采用文献中更大的初始泥块可改为 0.10
+    # 08C1 组次：q0 = 5 cm^2 (= 5e-4 m^2)，保证初始泥团居中且面积符合表 5.1
+    mud_area = 5e-4
     mud_region_side_length = mud_area ** 0.5
 
     # 1) 配置
@@ -77,7 +78,7 @@ def main():
     # 5) 单元与区域
     mpm.add_element({"ElementType": "Q4N2D", "ElementSize": [h, h]})
     
-    mud_x_start = 0.45
+    mud_x_start = 0.5 - 0.5 * mud_region_side_length  # 横向居中放置泥团
     mud_width = mud_region_side_length
     mud_x_end = mud_x_start + mud_width
     mud_y_start = 0.7
