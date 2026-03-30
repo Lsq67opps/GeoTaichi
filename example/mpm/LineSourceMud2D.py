@@ -49,7 +49,7 @@ def main():
     mpm.add_material(model="MohrCoulomb", material={  # 背景“水”
         "MaterialID": 1,
         "YoungModulus": 1e3,          # 极小模量
-        "PoissonRatio": 0.495,
+        "PoissonRatio": 0.3,          # 放宽泊松比，水的不可压缩性由 FluidBulkModulus 控制
         "Cohesion": 0.0,              # 无黏聚力，模拟无抗拉流体
         "Friction": 0.0,
         "Dilation": 0.0,
