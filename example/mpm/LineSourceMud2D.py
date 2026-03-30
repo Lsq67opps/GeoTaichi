@@ -105,11 +105,11 @@ def main():
     # 将四个水体区域合并为背景水，全部赋给 MaterialID=1
     mpm.add_body({"Template": [
          {"RegionName": "tank_bottom", "nParticlesPerCell": 2, "BodyID": 0, "MaterialID": 1, "InitialVelocity": [0., 0.], "FixVelocity": ["Free", "Free"]},
-         {"RegionName": "tank_top",    "nParticlesPerCell": 2, "BodyID": 1, "MaterialID": 1, "InitialVelocity": [0., 0.], "FixVelocity": ["Free", "Free"]},
-         {"RegionName": "tank_left",   "nParticlesPerCell": 2, "BodyID": 2, "MaterialID": 1, "InitialVelocity": [0., 0.], "FixVelocity": ["Free", "Free"]},
-         {"RegionName": "tank_right",  "nParticlesPerCell": 2, "BodyID": 3, "MaterialID": 1, "InitialVelocity": [0., 0.], "FixVelocity": ["Free", "Free"]},
+         {"RegionName": "tank_top",    "nParticlesPerCell": 2, "BodyID": 0, "MaterialID": 1, "InitialVelocity": [0., 0.], "FixVelocity": ["Free", "Free"]},
+         {"RegionName": "tank_left",   "nParticlesPerCell": 2, "BodyID": 0, "MaterialID": 1, "InitialVelocity": [0., 0.], "FixVelocity": ["Free", "Free"]},
+         {"RegionName": "tank_right",  "nParticlesPerCell": 2, "BodyID": 0, "MaterialID": 1, "InitialVelocity": [0., 0.], "FixVelocity": ["Free", "Free"]},
          # 泥块，MaterialID=2
-         {"RegionName": "mud",         "nParticlesPerCell": 2, "BodyID": 4, "MaterialID": 2, "InitialVelocity": [0., 0.], "FixVelocity": ["Free", "Free"]}
+         {"RegionName": "mud",         "nParticlesPerCell": 2, "BodyID": 0, "MaterialID": 2, "InitialVelocity": [0., 0.], "FixVelocity": ["Free", "Free"]}
     ]})
 
     # 7) 边界：四面反射壁
