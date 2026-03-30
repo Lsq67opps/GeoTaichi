@@ -8,7 +8,7 @@ def main():
     # 常量
     GRAVITY_ACCELERATION = 9.8
     h = 0.005
-    water_depth = 0.7  # 仅填充下部水体，避免与泥块初始重叠
+    water_depth = 1.0  # 1 m 水深，与文献保持一致
     sound_speed_multiplier = 6   # 降低体积模量以减小初始水-泥压力跳变
     c0 = sound_speed_multiplier * (GRAVITY_ACCELERATION * water_depth) ** 0.5
     dt_c = 0.3 * h / c0
@@ -69,9 +69,13 @@ def main():
 
     # 5) 单元与区域
     mpm.add_element({"ElementType": "Q4N2D", "ElementSize": [h, h]})
+    mud_top = 0.7 + mud_region_side_length
     mpm.add_region([
-        {"Name": "tank", "Type": "Rectangle2D", "BoundingBoxPoint": [0., 0.],
-         "BoundingBoxSize": [1., water_depth], "ydirection": [0., 1.]},
+        # 水体区域：拆分成上下两块，避免与泥块占据同一初始单元
+        {"Name": "tank_bottom", "Type": "Rectangle2D", "BoundingBoxPoint": [0., 0.],
+         "BoundingBoxSize": [1., 0.7], "ydirection": [0., 1.]},
+        {"Name": "tank_top", "Type": "Rectangle2D", "BoundingBoxPoint": [0., mud_top],
+         "BoundingBoxSize": [1., water_depth - mud_top], "ydirection": [0., 1.]},
         {"Name": "mud", "Type": "Rectangle2D", "BoundingBoxPoint": [0.45, 0.7],
          "BoundingBoxSize": [mud_region_side_length, mud_region_side_length],
          "ydirection": [0., 1.]}
@@ -79,11 +83,13 @@ def main():
 
     # 6) 物体
     mpm.add_body({"Template": [
-         {"RegionName": "tank", "nParticlesPerCell": 1, "BodyID": 0, "MaterialID": 1,
+         {"RegionName": "tank_bottom", "nParticlesPerCell": 1, "BodyID": 0, "MaterialID": 1,
           "InitialVelocity": [0., 0.], "FixVelocity": ["Free", "Free"]},
-        # Single-layer grid only (contact detection disabled); both bodies share BodyID=0
-        {"RegionName": "mud", "nParticlesPerCell": 2, "BodyID": 0, "MaterialID": 2,
-         "InitialVelocity": [0., 0.], "FixVelocity": ["Free", "Free"]}
+         {"RegionName": "tank_top", "nParticlesPerCell": 1, "BodyID": 0, "MaterialID": 1,
+          "InitialVelocity": [0., 0.], "FixVelocity": ["Free", "Free"]},
+         # Single-layer grid only (contact detection disabled); both bodies share BodyID=0
+         {"RegionName": "mud", "nParticlesPerCell": 2, "BodyID": 0, "MaterialID": 2,
+          "InitialVelocity": [0., 0.], "FixVelocity": ["Free", "Free"]}
     ]})
 
     # 7) 边界：四面反射壁
