@@ -105,10 +105,19 @@ def main():
     # 6) 物体
     # 将四个水体区域合并为背景水，全部赋给 MaterialID=1
     mpm.add_body({"Template": [
-         {"RegionName": "tank_bottom", "nParticlesPerCell": 2, "BodyID": 0, "MaterialID": 1, "InitialVelocity": [0., 0.], "FixVelocity": ["Free", "Free"]},
-         {"RegionName": "tank_top",    "nParticlesPerCell": 2, "BodyID": 0, "MaterialID": 1, "InitialVelocity": [0., 0.], "FixVelocity": ["Free", "Free"]},
-         {"RegionName": "tank_left",   "nParticlesPerCell": 2, "BodyID": 0, "MaterialID": 1, "InitialVelocity": [0., 0.], "FixVelocity": ["Free", "Free"]},
-         {"RegionName": "tank_right",  "nParticlesPerCell": 2, "BodyID": 0, "MaterialID": 1, "InitialVelocity": [0., 0.], "FixVelocity": ["Free", "Free"]},
+         # 为水体设置近似静水初始孔压，减弱重力骤加产生的冲击波
+         {"RegionName": "tank_bottom", "nParticlesPerCell": 2, "BodyID": 0, "MaterialID": 1,
+          "InitialVelocity": [0., 0.], "FixVelocity": ["Free", "Free"],
+          "ParticleStress": {"PorePressure": rho_f * GRAVITY_ACCELERATION * (water_depth - 0.5 * mud_y_start)}},
+         {"RegionName": "tank_top",    "nParticlesPerCell": 2, "BodyID": 0, "MaterialID": 1,
+          "InitialVelocity": [0., 0.], "FixVelocity": ["Free", "Free"],
+          "ParticleStress": {"PorePressure": rho_f * GRAVITY_ACCELERATION * (water_depth - (mud_y_end + 0.5 * (water_depth - mud_y_end)))}},
+         {"RegionName": "tank_left",   "nParticlesPerCell": 2, "BodyID": 0, "MaterialID": 1,
+          "InitialVelocity": [0., 0.], "FixVelocity": ["Free", "Free"],
+          "ParticleStress": {"PorePressure": rho_f * GRAVITY_ACCELERATION * (water_depth - (mud_y_start + 0.5 * mud_width))}},
+         {"RegionName": "tank_right",  "nParticlesPerCell": 2, "BodyID": 0, "MaterialID": 1,
+          "InitialVelocity": [0., 0.], "FixVelocity": ["Free", "Free"],
+          "ParticleStress": {"PorePressure": rho_f * GRAVITY_ACCELERATION * (water_depth - (mud_y_start + 0.5 * mud_width))}},
          # 泥块，MaterialID=2
          {"RegionName": "mud",         "nParticlesPerCell": 2, "BodyID": 0, "MaterialID": 2, "InitialVelocity": [0., 0.], "FixVelocity": ["Free", "Free"]}
     ]})
