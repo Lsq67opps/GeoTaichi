@@ -1,7 +1,7 @@
 from geotaichi import *
 
 
-def main(mud_area=5e-4, enforce_08c1=True):
+def main(mud_area=5e-4):
     init(dim=2, device_memory_GB=3.7)
     mpm = MPM()
 
@@ -16,10 +16,7 @@ def main(mud_area=5e-4, enforce_08c1=True):
     rho_f = 1000.  # 流体密度 (kg/m^3)
     fluid_bulk = (c0 ** 2) * rho_f  # rho_f * c0^2
     background_water_solid_density = 1.0  # kg/m^3， 刻意远小于 2650 以模拟水， 保证双相质量项非零
-    # 08C1 工况：q0 = 5 cm^2 (= 5e-4 m^2)， 默认强制使用文献值
-    expected_08c1_area = 5e-4  # 08C1 文献值 (5 cm^2)
-    if enforce_08c1 and abs(mud_area - expected_08c1_area) > 1e-9:
-        raise ValueError(f"08C1 requires mud area = 5e-4 m^2 (5 cm^2); got {mud_area}")
+    # 08C1 工况：q0 = 5 cm^2 (= 5e-4 m^2)
     mud_region_side_length = mud_area ** 0.5
 
     # 1) 配置
