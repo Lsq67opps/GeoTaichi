@@ -15,7 +15,7 @@ def main(mud_area=0.05):
 
     rho_f = 1000.  # 流体密度 (kg/m^3)
     fluid_bulk = (c0 ** 2) * rho_f  # rho_f * c0^2
-    background_water_solid_density = 1.0  # kg/m^3， 刻意远小于 2650 以模拟水， 保证双相质量项非零
+    background_water_solid_density = 2625.0
     # 默认泥块面积：mud_area = 5e-4 m^2（可按需调整）
     mud_area = 5e-4  # m^2
     mud_region_side_length = mud_area ** 0.5
@@ -56,7 +56,7 @@ def main(mud_area=0.05):
         "Dilation": 0.0,
         "SolidDensity": background_water_solid_density,
         "FluidDensity": rho_f,
-        "Porosity": 0.999,
+        "Porosity": 0.95,
         "FluidBulkModulus": fluid_bulk,
         "Permeability": 1e-2          # 极高渗透率，水相近乎自由流动
     })
@@ -131,7 +131,7 @@ def main(mud_area=0.05):
     ])
 
     # 8) 输出
-    mpm.select_save_data(grid=True)
+    mpm.select_save_data(particle=["MaterialID"], grid=True)
 
     # 运行
     mpm.run()
