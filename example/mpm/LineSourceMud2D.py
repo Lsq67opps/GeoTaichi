@@ -9,7 +9,7 @@ def main(mud_area=0.05):
     GRAVITY_ACCELERATION = 9.8
     h = 0.005
     water_depth = 1.0  # 1 m 水深，与文献一致
-    sound_speed_multiplier = 2.0   # 进一步降低体积模量， 减小初始水泥压差
+    sound_speed_multiplier =1.0    # 进一步降低体积模量， 减小初始水泥压差
     c0 = sound_speed_multiplier * (GRAVITY_ACCELERATION * water_depth) ** 0.5
     dt_c = 5.0e-6 
 
@@ -17,13 +17,13 @@ def main(mud_area=0.05):
     fluid_bulk = (c0 ** 2) * rho_f  # rho_f * c0^2
     background_water_solid_density = 2625.0
     # 默认泥块面积：mud_area = 5e-4 m^2（可按需调整）
-    mud_area = 5e-4  # m^2
+    mud_area = 5.0e-4  # m^2
     mud_region_side_length = mud_area ** 0.5
 
     # 1) 配置
     mpm.set_configuration(domain=[1.2, 1.2],      # 扩大网格，留出 0.2m 的边界插值和液面波动空间
-                          background_damping=5.0,     # 提高阻尼以先让静水压力收敛
-                          alphaPIC=0.5,
+                          background_damping=10.0,     # 提高阻尼以先让静水压力收敛
+                          alphaPIC=0.9,
                           mapping="USL",               # 也支持 MUSL
                           shape_function="QuadBSpline",
                           gravity=[0., -GRAVITY_ACCELERATION],
@@ -49,9 +49,9 @@ def main(mud_area=0.05):
     # 若 TwoPhaseSingleLayer 需要骨架参数，用极软的莫尔-库仑近似流体
     mpm.add_material(model="MohrCoulomb", material={  # 背景“水”
         "MaterialID": 1,
-        "YoungModulus": 10.0,          # 更软骨架避免伪体积模量
+        "YoungModulus": 100.0,          # 更软骨架避免伪体积模量
         "PoissonRatio": 0.0,          # 不依赖固相不可压性，体积模量由 FluidBulkModulus 提供
-        "Cohesion": 0.0,              # 无粘聚力，模拟无拉强度流体
+        "Cohesion": 5.0,              #赋予 5 Pa 的微小粘聚力，防止骨架在激波下拉伸撕裂
         "Friction": 0.0,
         "Dilation": 0.0,
         "SolidDensity": 2650.0,
