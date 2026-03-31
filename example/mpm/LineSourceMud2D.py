@@ -63,7 +63,7 @@ def main(mud_area=0.05):
 
     mpm.add_material(model="MohrCoulomb", material={  # 泥团，alpha_s0 = 0.606 => 孔隙率 0.394
         "MaterialID": 2,
-        "YoungModulus": 100，0,          # 软化骨架避免脆裂，利于泥体流动
+        "YoungModulus": 100.0,          # 软化骨架避免脆裂，利于泥体流动
         "PoissonRatio": 0.3,
         "Cohesion": 1.0,              # 泥体黏聚力， 值越小越易扩散
         "Friction": 0.0,
