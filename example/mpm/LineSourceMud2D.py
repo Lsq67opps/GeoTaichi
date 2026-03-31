@@ -32,7 +32,7 @@ def main(mud_area=5e-4, enforce_08c1=True):
                           material_type="TwoPhaseSingleLayer",
                           velocity_projection="Affine")
 
-    # 2) Solver
+    # 2) 求解器
     mpm.set_solver({"Timestep": min(dt_c, 2.0e-5),
                     "SimulationTime": 4.0,
                     "SaveInterval": 0.05,
