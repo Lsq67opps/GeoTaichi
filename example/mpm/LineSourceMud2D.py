@@ -16,7 +16,8 @@ def main(mud_area=0.05):
     rho_f = 1000.  # 流体密度 (kg/m^3)
     fluid_bulk = (c0 ** 2) * rho_f  # rho_f * c0^2
     background_water_solid_density = 1.0  # kg/m^3， 刻意远小于 2650 以模拟水， 保证双相质量项非零
-    # 默认泥块面积：mud_area = 0.05 m^2（可按需调整）
+    # 默认泥块面积：mud_area = 5e-4 m^2（可按需调整）
+    mud_area = 5e-4  # m^2
     mud_region_side_length = mud_area ** 0.5
 
     # 1) 配置
