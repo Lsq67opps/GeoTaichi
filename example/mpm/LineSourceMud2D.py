@@ -9,9 +9,9 @@ def main(mud_area=0.05):
     GRAVITY_ACCELERATION = 9.8
     h = 0.005
     water_depth = 1.0  # 1 m 水深，与文献一致
-    sound_speed_multiplier = 4   # 进一步降低体积模量， 减小初始水泥压差
+    sound_speed_multiplier = 2.0   # 进一步降低体积模量， 减小初始水泥压差
     c0 = sound_speed_multiplier * (GRAVITY_ACCELERATION * water_depth) ** 0.5
-    dt_c = 0.3 * h / c0
+    dt_c = 5.0e-6 
 
     rho_f = 1000.  # 流体密度 (kg/m^3)
     fluid_bulk = (c0 ** 2) * rho_f  # rho_f * c0^2
@@ -22,8 +22,8 @@ def main(mud_area=0.05):
 
     # 1) 配置
     mpm.set_configuration(domain=[1., 1.],
-                          background_damping=0.2,     # 提高阻尼以先让静水压力收敛
-                          alphaPIC=0.2,
+                          background_damping=5.0,     # 提高阻尼以先让静水压力收敛
+                          alphaPIC=0.5,
                           mapping="USL",               # 也支持 MUSL
                           shape_function="QuadBSpline",
                           gravity=[0., -GRAVITY_ACCELERATION],
@@ -49,12 +49,12 @@ def main(mud_area=0.05):
     # 若 TwoPhaseSingleLayer 需要骨架参数，用极软的莫尔-库仑近似流体
     mpm.add_material(model="MohrCoulomb", material={  # 背景“水”
         "MaterialID": 1,
-        "YoungModulus": 1e2,          # 更软骨架避免伪体积模量
+        "YoungModulus": 10.0,          # 更软骨架避免伪体积模量
         "PoissonRatio": 0.0,          # 不依赖固相不可压性，体积模量由 FluidBulkModulus 提供
         "Cohesion": 0.0,              # 无粘聚力，模拟无拉强度流体
         "Friction": 0.0,
         "Dilation": 0.0,
-        "SolidDensity": background_water_solid_density,
+        "SolidDensity": 2650.0,
         "FluidDensity": rho_f,
         "Porosity": 0.95,
         "FluidBulkModulus": fluid_bulk,
@@ -63,10 +63,10 @@ def main(mud_area=0.05):
 
     mpm.add_material(model="MohrCoulomb", material={  # 泥团，alpha_s0 = 0.606 => 孔隙率 0.394
         "MaterialID": 2,
-        "YoungModulus": 5e3,          # 软化骨架避免脆裂，利于泥体流动
+        "YoungModulus": 100，0,          # 软化骨架避免脆裂，利于泥体流动
         "PoissonRatio": 0.3,
-        "Cohesion": 5.0,              # 泥体黏聚力， 值越小越易扩散
-        "Friction": 15.0,
+        "Cohesion": 1.0,              # 泥体黏聚力， 值越小越易扩散
+        "Friction": 0.0,
         "Dilation": 0.0,
         "SolidDensity": 2650.,
         "FluidDensity": rho_f,
