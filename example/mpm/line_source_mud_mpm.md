@@ -85,8 +85,8 @@ mpm.add_material(model="LinearElastic", material={  # 泥沙团，按 αs0=0.606
 
 # 5) 网格与区域
 mpm.add_element({"ElementType": "Q4N2D", "ElementSize": [0.005, 0.005]})
-mud_area = 5e-4                     # 5 cm^2，保持与文献一致
-mud_region_side_length = mud_area ** 0.5
+ mud_area = 0.05                     # 0.05 m^2，可按需调整
+ mud_region_side_length = mud_area ** 0.5
 mpm.add_region([  # 背景水体
     {"Name": "tank", "Type": "Rectangle2D", "BoundingBoxPoint": [0., 0.],
      "BoundingBoxSize": [1., 1.], "ydirection": [0., 1.]},
