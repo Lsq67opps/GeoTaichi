@@ -5,7 +5,7 @@ def main(mud_area=5e-4, enforce_08c1=True):
     init(dim=2, device_memory_GB=3.7)
     mpm = MPM()
 
-    # 常量
+    # 常量 (Constants)
     GRAVITY_ACCELERATION = 9.8
     h = 0.005
     water_depth = 1.0  # 1 m 水深，与文献保持一致
