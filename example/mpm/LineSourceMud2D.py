@@ -18,6 +18,9 @@ def main():
     background_water_solid_density = 1.0  # kg/m^3，刻意远小于 2650 以模拟水；保证两相质量项非零且稳定
     # 08C1 组次：q0 = 5 cm^2 (= 5e-4 m^2)，保证初始泥团居中且面积符合表 5.1
     mud_area = 5e-4
+    expected_08c1_area = 5e-4  # 08C1 组次文献值（5 cm^2）
+    if abs(mud_area - expected_08c1_area) > 1e-9:
+        raise ValueError(f"08C1 requires mud area = 5e-4 m^2 (5 cm^2); got {mud_area}")
     mud_region_side_length = mud_area ** 0.5
 
     # 1) 配置
