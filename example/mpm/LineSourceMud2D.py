@@ -21,7 +21,7 @@ def main(mud_area=0.05):
     mud_region_side_length = mud_area ** 0.5
 
     # 1) 配置
-    mpm.set_configuration(domain=[1., 1.],
+    mpm.set_configuration(domain=[1.2, 1.2],      # 扩大网格，留出 0.2m 的边界插值和液面波动空间
                           background_damping=5.0,     # 提高阻尼以先让静水压力收敛
                           alphaPIC=0.5,
                           mapping="USL",               # 也支持 MUSL
@@ -70,9 +70,9 @@ def main(mud_area=0.05):
         "Dilation": 0.0,
         "SolidDensity": 2650.,
         "FluidDensity": rho_f,
-        "Porosity": 0.394,
+        "Porosity": 0.8,
         "FluidBulkModulus": fluid_bulk,
-        "Permeability": 1e-7
+        "Permeability": 1e-3
     })
 
        # 5) 单元与区域
@@ -113,12 +113,15 @@ def main(mud_area=0.05):
          {"RegionName": "mud",         "nParticlesPerCell": 2, "BodyID": 0, "MaterialID": 2, "InitialVelocity": [0., 0.], "FixVelocity": ["Free", "Free"]}
     ]})
 
-    # 7) 边界：四面反射墙
+    # 7) 边界：三面反射墙，去掉顶盖，让上方成为自由液面；将墙壁延长到 1.2 防止水花飞出
     mpm.add_boundary_condition(boundary=[
-        {"BoundaryType": "ReflectionConstraint", "Norm": [-1., 0.], "StartPoint": [0., 0.], "EndPoint": [0., 1.]},
-        {"BoundaryType": "ReflectionConstraint", "Norm": [1., 0.],  "StartPoint": [1., 0.], "EndPoint": [1., 1.]},
-        {"BoundaryType": "ReflectionConstraint", "Norm": [0., -1.], "StartPoint": [0., 0.], "EndPoint": [1., 0.]},
-        {"BoundaryType": "ReflectionConstraint", "Norm": [0., 1.],  "StartPoint": [0., 1.], "EndPoint": [1., 1.]}
+        # 左墙：从 y=0 建到 y=1.2
+        {"BoundaryType": "ReflectionConstraint", "Norm": [-1., 0.], "StartPoint": [0., 0.], "EndPoint": [0., 1.2]},
+        # 右墙：从 y=0 建到 y=1.2
+        {"BoundaryType": "ReflectionConstraint", "Norm": [1., 0.],  "StartPoint": [1., 0.], "EndPoint": [1., 1.2]},
+        # 底墙：从 x=0 建到 x=1.2
+        {"BoundaryType": "ReflectionConstraint", "Norm": [0., -1.], "StartPoint": [0., 0.], "EndPoint": [1.2, 0.]}
+        # 【修复2】：彻底删除了 y=1.0 的顶墙！
     ])
 
     # 8) 输出
