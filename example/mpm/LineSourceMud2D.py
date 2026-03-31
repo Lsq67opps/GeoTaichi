@@ -75,49 +75,40 @@ def main(mud_area=0.05):
         "Permeability": 1e-7
     })
 
-    # 5) 单元与区域
+       # 5) 单元与区域
     mpm.add_element({"ElementType": "Q4N2D", "ElementSize": [h, h]})
     
-    mud_x_start = 0.5 - 0.5 * mud_region_side_length  # 水平居中放置泥块
+    # 重新计算泥块的精确坐标，使其顶部与水面齐平 (y=1.0)
     mud_width = mud_region_side_length
+    mud_x_start = 0.5 - mud_width / 2.0   # 居中对齐
     mud_x_end = mud_x_start + mud_width
-    mud_y_start = 0.7
-    mud_y_end = mud_y_start + mud_width
+    mud_y_end = water_depth               # 顶部贴紧水面 (1.0)
+    mud_y_start = mud_y_end - mud_width   # 泥块底部 y 坐标
 
     mpm.add_region([
-        # 底部水体
+        # 底部水体 (充满整个水槽底部，直到泥块底部的高度)
         {"Name": "tank_bottom", "Type": "Rectangle2D", "BoundingBoxPoint": [0., 0.],
          "BoundingBoxSize": [1., mud_y_start], "ydirection": [0., 1.]},
-        # 顶部水体
-        {"Name": "tank_top", "Type": "Rectangle2D", "BoundingBoxPoint": [0., mud_y_end],
-         "BoundingBoxSize": [1., water_depth - mud_y_end], "ydirection": [0., 1.]},
-        # 左侧水体
+        
+        # 左侧水体 (泥块左侧的区域，高度从 mud_y_start 到水面)
         {"Name": "tank_left", "Type": "Rectangle2D", "BoundingBoxPoint": [0., mud_y_start],
          "BoundingBoxSize": [mud_x_start, mud_width], "ydirection": [0., 1.]},
-        # 右侧水体
+        
+        # 右侧水体 (泥块右侧的区域，高度从 mud_y_start 到水面)
         {"Name": "tank_right", "Type": "Rectangle2D", "BoundingBoxPoint": [mud_x_end, mud_y_start],
          "BoundingBoxSize": [1.0 - mud_x_end, mud_width], "ydirection": [0., 1.]},
-        # 泥块
+         
+        # 泥块 (顶部贴紧水面，居中)
         {"Name": "mud", "Type": "Rectangle2D", "BoundingBoxPoint": [mud_x_start, mud_y_start],
          "BoundingBoxSize": [mud_width, mud_width], "ydirection": [0., 1.]}
     ])
 
     # 6) 物体
-    # 四个水域合并为背景水，统一 MaterialID=1
+    # 将原来的 tank_top 删掉，只保留三个水体区域和泥块
     mpm.add_body({"Template": [
-         # 近似静水孔压以减弱突然施加重力的冲击
-         {"RegionName": "tank_bottom", "nParticlesPerCell": 2, "BodyID": 0, "MaterialID": 1,
-          "InitialVelocity": [0., 0.], "FixVelocity": ["Free", "Free"],
-          "ParticleStress": {"PorePressure": rho_f * GRAVITY_ACCELERATION * (water_depth - 0.5 * mud_y_start)}},
-         {"RegionName": "tank_top",    "nParticlesPerCell": 2, "BodyID": 0, "MaterialID": 1,
-          "InitialVelocity": [0., 0.], "FixVelocity": ["Free", "Free"],
-          "ParticleStress": {"PorePressure": rho_f * GRAVITY_ACCELERATION * (water_depth - (mud_y_end + 0.5 * (water_depth - mud_y_end)))}},
-         {"RegionName": "tank_left",   "nParticlesPerCell": 2, "BodyID": 0, "MaterialID": 1,
-          "InitialVelocity": [0., 0.], "FixVelocity": ["Free", "Free"],
-          "ParticleStress": {"PorePressure": rho_f * GRAVITY_ACCELERATION * (water_depth - (mud_y_start + 0.5 * mud_width))}},
-         {"RegionName": "tank_right",  "nParticlesPerCell": 2, "BodyID": 0, "MaterialID": 1,
-          "InitialVelocity": [0., 0.], "FixVelocity": ["Free", "Free"],
-          "ParticleStress": {"PorePressure": rho_f * GRAVITY_ACCELERATION * (water_depth - (mud_y_start + 0.5 * mud_width))}},
+         {"RegionName": "tank_bottom", "nParticlesPerCell": 2, "BodyID": 0, "MaterialID": 1, "InitialVelocity": [0., 0.], "FixVelocity": ["Free", "Free"]},
+         {"RegionName": "tank_left",   "nParticlesPerCell": 2, "BodyID": 0, "MaterialID": 1, "InitialVelocity": [0., 0.], "FixVelocity": ["Free", "Free"]},
+         {"RegionName": "tank_right",  "nParticlesPerCell": 2, "BodyID": 0, "MaterialID": 1, "InitialVelocity": [0., 0.], "FixVelocity": ["Free", "Free"]},
          # 泥块，MaterialID=2
          {"RegionName": "mud",         "nParticlesPerCell": 2, "BodyID": 0, "MaterialID": 2, "InitialVelocity": [0., 0.], "FixVelocity": ["Free", "Free"]}
     ]})
