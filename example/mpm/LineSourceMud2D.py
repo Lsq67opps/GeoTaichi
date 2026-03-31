@@ -18,7 +18,7 @@ def main(mud_area=5e-4, enforce_08c1=True):
     background_water_solid_density = 1.0  # kg/m^3, deliberately << 2650 to mimic water; keeps two-phase mass terms non-zero
     # 08C1 case: q0 = 5 cm^2 (= 5e-4 m^2); enforce literature value by default
     expected_08c1_area = 5e-4  # 08C1 literature value (5 cm^2)
-    enforce_flag = bool(locals().get("enforce_08c1", True))
+    enforce_flag = bool(enforce_08c1)
     if enforce_flag and abs(mud_area - expected_08c1_area) > 1e-9:
         raise ValueError(f"08C1 requires mud area = 5e-4 m^2 (5 cm^2); got {mud_area}")
     mud_region_side_length = mud_area ** 0.5
@@ -33,7 +33,7 @@ def main(mud_area=5e-4, enforce_08c1=True):
                           material_type="TwoPhaseSingleLayer",
                           velocity_projection="Affine")
 
-    # 2) 求解器
+    # 2) Solver
     mpm.set_solver({"Timestep": min(dt_c, 2.0e-5),
                     "SimulationTime": 4.0,
                     "SaveInterval": 0.05,
