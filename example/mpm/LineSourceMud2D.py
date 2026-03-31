@@ -9,14 +9,14 @@ def main(mud_area=5e-4, enforce_08c1=True):
     GRAVITY_ACCELERATION = 9.8
     h = 0.005
     water_depth = 1.0  # 1 m 水深，与文献一致
-    sound_speed_multiplier = 4   # 进一步降低体积模量，减小初始水泥压差
+    sound_speed_multiplier = 4   # 进一步降低体积模量， 减小初始水泥压差
     c0 = sound_speed_multiplier * (GRAVITY_ACCELERATION * water_depth) ** 0.5
     dt_c = 0.3 * h / c0
 
     rho_f = 1000.  # 流体密度 (kg/m^3)
     fluid_bulk = (c0 ** 2) * rho_f  # rho_f * c0^2
-    background_water_solid_density = 1.0  # kg/m^3，刻意远小于 2650 以模拟水，保证双相质量项非零
-    # 08C1 工况：q0 = 5 cm^2 (= 5e-4 m^2)，默认强制使用文献值
+    background_water_solid_density = 1.0  # kg/m^3， 刻意远小于 2650 以模拟水， 保证双相质量项非零
+    # 08C1 工况：q0 = 5 cm^2 (= 5e-4 m^2)， 默认强制使用文献值
     expected_08c1_area = 5e-4  # 08C1 文献值 (5 cm^2)
     if enforce_08c1 and abs(mud_area - expected_08c1_area) > 1e-9:
         raise ValueError(f"08C1 requires mud area = 5e-4 m^2 (5 cm^2); got {mud_area}")
@@ -67,7 +67,7 @@ def main(mud_area=5e-4, enforce_08c1=True):
         "MaterialID": 2,
         "YoungModulus": 5e3,          # 软化骨架避免脆裂，利于泥体流动
         "PoissonRatio": 0.3,
-        "Cohesion": 5.0,              # 泥体黏聚力，值越小越易扩散
+        "Cohesion": 5.0,              # 泥体黏聚力， 值越小越易扩散
         "Friction": 15.0,
         "Dilation": 0.0,
         "SolidDensity": 2650.,
