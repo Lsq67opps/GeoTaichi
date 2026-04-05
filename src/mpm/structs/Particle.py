@@ -274,9 +274,15 @@ class ParticleCloudTwoPhase2D:      # memory usage: 108B
             pressure = 1./3. * (self.stress[0, 0] + self.stress[1, 1] + self.stress[2, 2])
         return pressure
 
-    @ti.func   # total, fluid?
+    @ti.func   # total (solid+fluid), fluid only
     def _compute_external_force(self, gravity):
-        return self.m * vec2f(gravity[0], gravity[1]), self.m * vec2f(gravity[0], gravity[1])
+        # First return: total mixture gravity (m*g) used in self.force so that the
+        # subtraction formula  solid_force = self.force - self.forcef*mf  correctly
+        # recovers  ms*g + solid_stress − drag − fluid_stress.
+        # Second return: fluid-phase gravity (mf*g) accumulated into self.forcef.
+        # Previously both returned self.m*g, causing gravity to cancel in the solid
+        # equation of motion and preventing the mud from sinking.
+        return self.m * vec2f(gravity[0], gravity[1]), self.mf * vec2f(gravity[0], gravity[1])
     
     @ti.func
     def _compute_drag_force(self):
