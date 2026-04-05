@@ -32,7 +32,7 @@ def main():
     # 不设置以避免混淆。
     mpm.set_configuration(
         domain=[1.2, 1.2],
-        background_damping=0.05,    # 降低阻尼（原 0.2 过大，会抑制泥团运动）
+        background_damping=0.01,    # 进一步降低阻尼，避免把微小下沉速度数值抹平
         alphaPIC=0.02,
         mapping="USF",
         shape_function="GIMP",
@@ -43,7 +43,7 @@ def main():
     # === 2) 求解器 ===
     mpm.set_solver({
         "Timestep": dt_c,
-        "SimulationTime": 1.0,
+        "SimulationTime": 2.0,
         "SaveInterval": 0.05,
         "SavePath": "water_mud_output"
     })
@@ -70,8 +70,8 @@ def main():
         "FluidDensity": rho_f,
         "Porosity": 0.90,
         "FluidBulkModulus": fluid_bulk,
-        "Permeability": 1e-3,
-        "YoungModulus": 5e6,
+        "Permeability": 5e-2,
+        "YoungModulus": 5e4,
         "PoissonRatio": 0.30,   # 修正拼写（原 PossionRatio 会被框架忽略）
     })
 
@@ -82,7 +82,7 @@ def main():
         "FluidDensity": rho_f,
         "Porosity": 0.40,
         "FluidBulkModulus": fluid_bulk,
-        "Permeability": 5e-4,
+        "Permeability": 2e-3,
         "YoungModulus": 8e6,
         "PoissonRatio": 0.30,   # 修正拼写
     })
@@ -145,7 +145,9 @@ def main():
     #   mud          → y_c = mud_y_start + mud_area/2 = 0.975（近液面，压力极小）
     p_water_below = rho_f * GRAVITY_ACCELERATION * (H_surface - mud_y_start / 2.0)
     p_water_sides = rho_f * GRAVITY_ACCELERATION * (H_surface - (mud_y_start + mud_area / 2.0))
-    p_mud         = rho_f * GRAVITY_ACCELERATION * (H_surface - (mud_y_start + mud_area / 2.0))
+    # 泥团采用单独孔压系数：略低于局部静水压，打破近似“中性平衡”初始态
+    mud_pore_pressure_factor = 0.85
+    p_mud = mud_pore_pressure_factor * rho_f * GRAVITY_ACCELERATION * (H_surface - (mud_y_start + mud_area / 2.0))
 
     # === 8) 物体：水（三段）+ 泥 ===
     mpm.add_body({
@@ -160,7 +162,8 @@ def main():
                     "InternalStress": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
                     "PorePressure": p_water_below
                 },
-                "InitialVelocity": [0.0, 0.0],
+                # 给泥团一个很小的向下扰动速度，帮助触发下沉分支
+                "InitialVelocity": [0.0, -0.03],
                 "FixVelocity": ["Free", "Free"]
             },
             # 泥团左侧水体
