@@ -94,15 +94,15 @@ def main():
         "ydirection": [0.0, 1.0]
     }
 
-    mud_size = 0.04
-    mud_x_start = 0.5 - mud_size / 2.0
+    mud_area = 0.05
+    mud_x_start = 0.5 - mud_area / 2.0
     mud_y_end = water_depth
-    mud_y_start = mud_y_end - mud_size
+    mud_y_start = mud_y_end - mud_area
     mud_region = {
         "Name": "mud",
         "Type": "Rectangle2D",
         "BoundingBoxPoint": [mud_x_start, mud_y_start],
-        "BoundingBoxSize": [mud_size, mud_size],
+        "BoundingBoxSize": [mud_area, mud_area],
         "ydirection": [0.0, 1.0]
     }
 
@@ -169,10 +169,6 @@ def main():
     mpm.run()
     mpm.postprocessing(read_path="water_mud_output",
                        write_background_grid=True)
-
-
-if __name__ == "__main__":
-    main()
 
 
 if __name__ == "__main__":
