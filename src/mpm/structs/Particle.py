@@ -274,13 +274,24 @@ class ParticleCloudTwoPhase2D:      # memory usage: 108B
             pressure = 1./3. * (self.stress[0, 0] + self.stress[1, 1] + self.stress[2, 2])
         return pressure
 
-    @ti.func   # total, fluid?
+    @ti.func   # total (solid+fluid), fluid only
     def _compute_external_force(self, gravity):
-        return self.m * vec2f(gravity[0], gravity[1]), self.m * vec2f(gravity[0], gravity[1])
+        # First return: total mixture gravity (m*g) used in self.force so that the
+        # subtraction formula  solid_force = self.force - self.forcef*mf  correctly
+        # recovers  ms*g + solid_stress − drag − fluid_stress.
+        # Second return: fluid-phase gravity (mf*g) accumulated into self.forcef.
+        # Previously both returned self.m*g, causing gravity to cancel in the solid
+        # equation of motion and preventing the mud from sinking.
+        return self.m * vec2f(gravity[0], gravity[1]), self.mf * vec2f(gravity[0], gravity[1])
     
     @ti.func
-    def _compute_drag_force(self):
-        return -self.porosity * self.porosity * 9.8 * 1000 * self.vol * (self.vf - self.vs) / self.permeability
+    def _compute_drag_force(self, gravity):
+        # Use runtime gravity magnitude and particle-carried fluid density
+        # instead of hard-coded constants (9.8, 1000).
+        gmag = ti.sqrt(gravity[0] * gravity[0] + gravity[1] * gravity[1] + gravity[2] * gravity[2])
+        rho_f = self.mf / ti.max(self.vol * self.porosity, 1e-12)
+        drag_coeff = self.porosity * self.porosity * rho_f * gmag * self.vol / ti.max(self.permeability, 1e-12)
+        return -drag_coeff * (self.vf - self.vs)
     
     @ti.func  # total internal force, fluid internal force
     def _compute_internal_force(self):
@@ -301,6 +312,29 @@ class ParticleCloudTwoPhase2D:      # memory usage: 108B
         self.vs = (alpha * vPICs + (1 - alpha) * (vFLIPs + v0s)) * flag2 + v0s * flag1
         self.vf = (alpha * vPICf + (1 - alpha) * (vFLIPf + v0f)) * flag2 + v0f * flag1
         self.x += vPIC * dt[None] * flag2 + v0 * dt[None] * flag1
+        # 若粒子在单步内穿越背景网格范围，立即截断位置并反射速度，避免约束失效
+        if GlobalVariable.MPMXSIZE > 0.:
+            if self.x[0] < 0.:
+                self.x[0] = 0.
+                self.v[0] = abs(self.v[0])
+                self.vs[0] = abs(self.vs[0])
+                self.vf[0] = abs(self.vf[0])
+            elif self.x[0] > GlobalVariable.MPMXSIZE:
+                self.x[0] = GlobalVariable.MPMXSIZE
+                self.v[0] = -abs(self.v[0])
+                self.vs[0] = -abs(self.vs[0])
+                self.vf[0] = -abs(self.vf[0])
+        if GlobalVariable.MPMYSIZE > 0.:
+            if self.x[1] < 0.:
+                self.x[1] = 0.
+                self.v[1] = abs(self.v[1])
+                self.vs[1] = abs(self.vs[1])
+                self.vf[1] = abs(self.vf[1])
+            elif self.x[1] > GlobalVariable.MPMYSIZE:
+                self.x[1] = GlobalVariable.MPMYSIZE
+                self.v[1] = -abs(self.v[1])
+                self.vs[1] = -abs(self.vs[1])
+                self.vf[1] = -abs(self.vf[1])
         if ti.static(GlobalVariable.MPMXPBC):
             self.x[0] -= ti.floor(self.x[0] / GlobalVariable.MPMXSIZE) * GlobalVariable.MPMXSIZE
         if ti.static(GlobalVariable.MPMYPBC):
@@ -414,26 +448,44 @@ class ParticleCloud2DAxisy:  # memory usage: 108B
 
 @ti.dataclass
 class LargeScaleParticle:
+    # Reduced-memory particle used for G2P2G mode; still needs velocity gradient
+    # support when Taylor/APIC projection is enabled.
     particleID: int
+    bodyID: ti.u8
+    materialID: ti.u8
+    active: ti.u8
+    m: float
     vol: float
     x: vec3f
     v: vec3f
     stress: vec6f
+    velocity_gradient: mat3x3
+    fix_v: vec3u8
 
     @ti.func
     def _restart(self, bodyID, materialID, active, mass, position, velocity, volume, stress, velocity_gradient, fix_v):
-        self.x = float(position)
-        self.v = float(velocity)
+        self.bodyID = ti.u8(bodyID)
+        self.materialID = ti.u8(materialID)
+        self.active = ti.u8(active)
+        self.m = float(mass)
+        self.x = vec3f(position)
+        self.v = vec3f(velocity)
         self.vol = float(volume)
-        self.stress = float(stress)
+        self.stress = vec6f(stress)
+        self.velocity_gradient = mat3x3(velocity_gradient)
+        self.fix_v = vec3u8(fix_v)
 
     @ti.func
     def _set_essential(self, particleID, bodyID, materialID, density, particle_volume, position, init_v, fix_v):
         self.particleID = particleID
+        self.active = ti.u8(1)
+        self.bodyID = ti.u8(bodyID)
+        self.materialID = ti.u8(materialID)
         self.m = float(particle_volume * density)
-        self.x = float(position)
-        self.v = float(init_v)
+        self.x = vec3f(position)
+        self.v = vec3f(init_v)
         self.vol = float(particle_volume)
+        self.fix_v = fix_v
 
     @ti.func
     def _add_gravity_field(self, gamma):
@@ -465,6 +517,14 @@ class LargeScaleParticle:
             pressure = 1./3. * (self.stress[0, 0] + self.stress[1, 1] + self.stress[2, 2])
         return pressure
 
+    @ti.func
+    def _update_rigid_body(self, dt):
+        self.x += self.v * dt[None]
+
+    @ti.func
+    def _compute_particle_velocity(self, xg):
+        return self.v - self.velocity_gradient @ (self.x - xg)
+
 @ti.dataclass
 class ParticleCloud:      
     particleID: int
@@ -485,12 +545,12 @@ class ParticleCloud:
         self.materialID = ti.u8(materialID)
         self.active = ti.u8(active)
         self.m = float(mass)
-        self.x = float(position)
-        self.v = float(velocity)
+        self.x = vec3f(position)
+        self.v = vec3f(velocity)
         self.vol = float(volume)
-        self.stress = float(stress)
-        self.velocity_gradient = float(velocity_gradient)
-        self.fix_v = ti.cast(fix_v, ti.u8)
+        self.stress = vec6f(stress)
+        self.velocity_gradient = mat3x3(velocity_gradient)
+        self.fix_v = vec3u8(fix_v)
 
     @ti.func
     def _set_essential(self, particleID, bodyID, materialID, density, particle_volume, position, init_v, fix_v):

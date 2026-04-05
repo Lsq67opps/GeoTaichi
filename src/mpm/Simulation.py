@@ -134,6 +134,13 @@ class Simulation(object):
                 self.domain = vec3f(domain)
             elif self.dimension == 2:
                 self.domain = vec2f(domain)
+        # 对于所有边界类型，记录域尺寸以便粒子越界时可进行截断/反射
+        if self.dimension >= 1:
+            GlobalVariable.MPMXSIZE = float(self.domain[0])
+        if self.dimension >= 2:
+            GlobalVariable.MPMYSIZE = float(self.domain[1])
+        if self.dimension == 3:
+            GlobalVariable.MPMZSIZE = float(self.domain[2])
         
     def set_boundary(self, boundary):
         BOUNDARY = {
@@ -485,4 +492,3 @@ class Simulation(object):
         self.multilevel = int(multilevel)
         self.pre_and_post_smoothing = int(pre_and_post_smoothing)
         self.bottom_smoothing = int(bottom_smoothing)
-

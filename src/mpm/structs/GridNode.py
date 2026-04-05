@@ -402,9 +402,12 @@ class NodeTwoPhase2D:
     @ti.func
     def _compute_nodal_kinematic_solid(self, damp, dt):
         unbalanced_force = (self.force - self.forcef * self.mf) / self.ms
-        forces = unbalanced_force # - damp * unbalanced_force.norm() * vsign(self.momentum)
-        self.momentums += forces * dt[None]
-        self.forces = forces
+        velocity = self.momentums
+        for d in ti.static(range(2)):
+            if velocity[d] * unbalanced_force[d] > 0.:
+                unbalanced_force[d] -= damp * ti.abs(unbalanced_force[d]) * sgn(velocity[d])
+        self.momentums += unbalanced_force * dt[None]
+        self.forces = unbalanced_force
 
     @ti.func
     def _update_nodal_kinematic(self):

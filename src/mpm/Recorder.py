@@ -160,6 +160,7 @@ class WriteFile:
 
     def MonitorParticleTwoPhase(self, sims: Simulation, scene: myScene):
         particle_num = scene.particleNum[0]
+        particleID = scene.particle.particleID.to_numpy()[0:scene.particleNum[0]]
         position = scene.particle.x.to_numpy()[0:scene.particleNum[0]]
         bodyID = scene.particle.bodyID.to_numpy()[0:scene.particleNum[0]]
         materialID = scene.particle.materialID.to_numpy()[0:scene.particleNum[0]]
@@ -182,7 +183,7 @@ class WriteFile:
         state_vars.update({"pressure": pressure})
         self.visualizeParticle(sims, position, velocity, volume, state_vars)
         np.savez(self.particle_path+f'/MPMParticle{sims.current_print:06d}', t_current=sims.current_time, body_num = particle_num, 
-                                                                             bodyID=bodyID, materialID=materialID, active=active, mass=mass, volume=volume, position=position, velocity=velocity, 
+                                                                             particleID=particleID, bodyID=bodyID, materialID=materialID, active=active, mass=mass, volume=volume, position=position, velocity=velocity, 
                                                                              stress=stress, solid_velocity_gradient=solid_velocity_gradient, fluid_velocity_gradient=fluid_velocity_gradient, fix_v=fix_v, state_vars=state_vars, 
                                                                              solid_velocity=solid_velocity, fluid_velocity=fluid_velocity, solid_mass=solid_mass, fluid_mass=fluid_mass, pressure=pressure, permeability=permeability, porosity=porosity)
 

@@ -11,6 +11,21 @@ from src.mpm.engines.FreeSurfaceDetection import *
 class ULExplicitTwoPhaseEngine(ULExplicitEngine):
     def __init__(self, sims) -> None:
         super().__init__(sims)
+        # Two-phase particles do not store a single velocity_gradient field, so
+        # the Taylor/APIC momentum projection in the base class is not applicable.
+        # Always use the two-phase P2G mapping defined below.
+        self.compute_nodal_kinematic = self.compute_nodal_kinematics
+        # Ensure velocity-gradient updates use the two-phase kernels that operate
+        # on solid/fluid gradients instead of the single-field affine kernels.
+        if sims.dimension == 2:
+            if sims.stabilize == "B-Bar Method":
+                self.compute_velocity_gradient = self.update_velocity_gradient_bbar_2D
+            else:
+                self.compute_velocity_gradient = self.update_velocity_gradient_2D
+            self.calculate_velocity_gradient = self.compute_velocity_gradient
+        elif sims.dimension == 3:
+            self.compute_velocity_gradient = self.update_velocity_gradient
+            self.calculate_velocity_gradient = self.compute_velocity_gradient
 
     def compute_particle_kinematics(self, sims: Simulation, scene: myScene):
         kernel_kinemaitc_g2p_twophase(scene.element.grid_nodes, sims.alphaPIC, sims.dt, int(scene.particleNum[0]), scene.node, scene.particle, scene.element.LnID, scene.element.shape_fn, scene.element.node_size)
