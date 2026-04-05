@@ -285,8 +285,13 @@ class ParticleCloudTwoPhase2D:      # memory usage: 108B
         return self.m * vec2f(gravity[0], gravity[1]), self.mf * vec2f(gravity[0], gravity[1])
     
     @ti.func
-    def _compute_drag_force(self):
-        return -self.porosity * self.porosity * 9.8 * 1000 * self.vol * (self.vf - self.vs) / self.permeability
+    def _compute_drag_force(self, gravity):
+        # Use runtime gravity magnitude and particle-carried fluid density
+        # instead of hard-coded constants (9.8, 1000).
+        gmag = ti.sqrt(gravity[0] * gravity[0] + gravity[1] * gravity[1] + gravity[2] * gravity[2])
+        rho_f = self.mf / ti.max(self.vol * self.porosity, 1e-12)
+        drag_coeff = self.porosity * self.porosity * rho_f * gmag * self.vol / ti.max(self.permeability, 1e-12)
+        return -drag_coeff * (self.vf - self.vs)
     
     @ti.func  # total internal force, fluid internal force
     def _compute_internal_force(self):

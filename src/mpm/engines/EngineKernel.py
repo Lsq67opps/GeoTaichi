@@ -884,7 +884,7 @@ def kernel_external_force_p2g_twophase(total_nodes: int, gravity: ti.types.vecto
         if int(particle[np].materialID) > 0 and int(particle[np].active) == 1:
             bodyID = int(particle[np].bodyID)
             fex, fexf = particle[np]._compute_external_force(gravity)
-            drag = particle[np]._compute_drag_force()
+            drag = particle[np]._compute_drag_force(gravity)
             offset = np * total_nodes
             for ln in range(offset, offset + int(node_size[np])):
                 nodeID = LnID[ln]
@@ -904,7 +904,7 @@ def kernel_force_p2g_twophase(total_nodes: int, particleNum: int, gravity: ti.ty
             bodyID = int(particle[np].bodyID)
             fex, fexf = particle[np]._compute_external_force(gravity)
             fInt, fintf = particle[np]._compute_internal_force()
-            drag = particle[np]._compute_drag_force()
+            drag = particle[np]._compute_drag_force(gravity)
             offset = np * total_nodes
             for ln in range(offset, offset + int(node_size[np])):
                 nodeID = LnID[ln]
@@ -932,7 +932,7 @@ def kernel_force_p2g_twophase2D(total_nodes: int, particleNum: int, gravity: ti.
             bodyID = int(particle[np].bodyID)
             fex, fexf = particle[np]._compute_external_force(gravity)
             fInt, fintf = particle[np]._compute_internal_force()
-            drag = particle[np]._compute_drag_force()
+            drag = particle[np]._compute_drag_force(gravity)
             offset = np * total_nodes
             for ln in range(offset, offset + int(node_size[np])):
                 nodeID = LnID[ln]
@@ -958,7 +958,7 @@ def kernel_force_bbar_p2g_twophase2D(total_nodes: int, particleNum: int, gravity
             bodyID = int(particle[np].bodyID)
             fex, fexf = particle[np]._compute_external_force(gravity)
             fInt, fintf = particle[np]._compute_internal_force()
-            drag = particle[np]._compute_drag_force()
+            drag = particle[np]._compute_drag_force(gravity)
             offset = np * total_nodes
             for ln in range(offset, offset + int(node_size[np])):
                 nodeID = LnID[ln]
@@ -987,7 +987,7 @@ def kernel_force_p2g_twophase_2DAxisy(total_nodes: int, particleNum: int, gravit
             position = particle[np].x
             fex, fexf = particle[np]._compute_external_force(gravity)
             fInt, fintf = particle[np]._compute_internal_force()
-            drag = particle[np]._compute_drag_force()
+            drag = particle[np]._compute_drag_force(gravity)
             offset = np * total_nodes
             for ln in range(offset, offset + int(node_size[np])):
                 nodeID = LnID[ln]
@@ -1015,7 +1015,7 @@ def kernel_force_bbar_p2g_twophase_2DAxisy(total_nodes: int, particleNum: int, g
             position = particle[np].x
             fex, fexf = particle[np]._compute_external_force(gravity)
             fInt, fintf = particle[np]._compute_internal_force()
-            drag = particle[np]._compute_drag_force()
+            drag = particle[np]._compute_drag_force(gravity)
             offset = np * total_nodes
             for ln in range(offset, offset + int(node_size[np])):
                 nodeID = LnID[ln]
